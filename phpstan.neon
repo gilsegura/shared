@@ -1,0 +1,10 @@
+includes:
+	- vendor/phpstan/phpstan-symfony/extension.neon
+parameters:
+	checkMissingIterableValueType: false
+	inferPrivatePropertyTypeFromConstructor: true
+	ignoreErrors:
+	    - '#Parameter \#1 \.\.\.\$expressions of class Shared\\Criteria\\Expr\\AndX constructor expects Shared\\Criteria\\Expr\\AndX\|Shared\\Criteria\\Expr\\Comparison\|Shared\\Criteria\\Expr\\OrX, Shared\\Criteria\\ExpressionInterface given\.#'
+	    - '#Parameter \#1 \.\.\.\$expressions of class Shared\\Criteria\\Expr\\OrX constructor expects Shared\\Criteria\\Expr\\AndX\|Shared\\Criteria\\Expr\\Comparison\|Shared\\Criteria\\Expr\\OrX, Shared\\Criteria\\ExpressionInterface given\.#'
+	    - '#Parameter \#1 \.\.\.\$expressions of class Shared\\Criteria\\Expr\\OrderX constructor expects Shared\\Criteria\\Expr\\Sort, Shared\\Criteria\\ExpressionInterface given\.#'
+	    - '#Method Shared\\Tests\\EventSourcing\\AnotherEventSourcedAggregateRootStore\:\:get\(\) should return Shared\\Tests\\EventSourcing\\AnotherEventSourcedAggregateRoot but returns Shared\\EventSourcing\\AggregateRootInterface\.#'
