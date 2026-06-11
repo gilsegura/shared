@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shared\EventSourcing\Factory;
 
-use ProxyAssert\Assertion;
 use Shared\Domain\DomainEventStream;
 use Shared\EventSourcing\AbstractEventSourcedAggregateRoot;
 use Shared\EventSourcing\AggregateRootFactoryInterface;
@@ -20,10 +19,11 @@ final readonly class PublicConstructorAggregateRootFactory implements AggregateR
     #[\Override]
     public function __invoke(DomainEventStream $stream): AggregateRootInterface
     {
-        /** @var AbstractEventSourcedAggregateRoot $aggregateRoot */
         $aggregateRoot = new $this->aggregateRootFQCN();
 
-        Assertion::isInstanceOf($aggregateRoot, AbstractEventSourcedAggregateRoot::class);
+        if (!$aggregateRoot instanceof AbstractEventSourcedAggregateRoot) {
+            throw new \InvalidArgumentException(\sprintf('Class "%s" must extend %s.', $this->aggregateRootFQCN, AbstractEventSourcedAggregateRoot::class));
+        }
 
         $aggregateRoot->initialize($stream);
 

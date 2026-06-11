@@ -15,6 +15,9 @@ use Shared\EventStore\StreamNotFoundException;
 
 final class InMemoryEventStore implements EventStoreInterface, EventStoreManagerInterface
 {
+    /**
+     * @var array<string, DomainMessage[]>
+     */
     private array $data = [];
 
     #[\Override]

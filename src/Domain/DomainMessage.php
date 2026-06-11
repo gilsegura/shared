@@ -13,7 +13,7 @@ final readonly class DomainMessage
         public int $playhead,
         public Metadata $metadata,
         public DomainEventInterface $payload,
-        public HighResolutionTimeImmutable $recordedAt,
+        public DateTimeImmutable $recordedAt,
     ) {
         $this->type = strtr($payload::class, '\\', '.');
     }
@@ -29,7 +29,7 @@ final readonly class DomainMessage
             $playhead,
             $metadata,
             $payload,
-            HighResolutionTimeImmutable::now()
+            DateTimeImmutable::now()
         );
     }
 

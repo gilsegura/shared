@@ -8,6 +8,9 @@ use Serializer\SerializableInterface;
 
 final readonly class Metadata implements SerializableInterface
 {
+    /**
+     * @param array<string, mixed> $values
+     */
     private function __construct(
         public array $values,
     ) {
@@ -28,12 +31,18 @@ final readonly class Metadata implements SerializableInterface
         return new self(array_merge($this->values, $metadata->values));
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     #[\Override]
-    public static function deserialize(array $data): self
+    public static function deserialize(array $data): static
     {
         return new self($data);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     #[\Override]
     public function serialize(): array
     {

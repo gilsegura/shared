@@ -80,7 +80,6 @@ final readonly class EventWasOccurredV1ToV2Upcaster implements UpcasterInterface
     #[\Override]
     public function __invoke(DomainMessage $message): DomainMessage
     {
-        /** @var EventV1WasOccurred $event */
         $event = $message->payload;
 
         if (!$event instanceof EventV1WasOccurred) {
@@ -99,12 +98,18 @@ final readonly class EventWasOccurredV1ToV2Upcaster implements UpcasterInterface
 
 final readonly class EventV1WasOccurred implements DomainEventInterface
 {
+    /**
+     * @param array<string, mixed> $data
+     */
     #[\Override]
-    public static function deserialize(array $data): self
+    public static function deserialize(array $data): static
     {
         return new self();
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     #[\Override]
     public function serialize(): array
     {
@@ -114,12 +119,18 @@ final readonly class EventV1WasOccurred implements DomainEventInterface
 
 final readonly class EventV2WasOccurred implements DomainEventInterface
 {
+    /**
+     * @param array<string, mixed> $data
+     */
     #[\Override]
-    public static function deserialize(array $data): self
+    public static function deserialize(array $data): static
     {
         return new self();
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     #[\Override]
     public function serialize(): array
     {

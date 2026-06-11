@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Shared\Tests\EventSourcing;
 
 use PHPUnit\Framework\TestCase;
-use ProxyAssert\Assertion;
 use Shared\Domain\DateTimeImmutable;
 use Shared\Domain\DomainEventInterface;
 use Shared\Domain\DomainEventStream;
@@ -113,18 +112,26 @@ final readonly class EventSourcedAggregateRootWasCreated implements DomainEventI
     ) {
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     #[\Override]
-    public static function deserialize(array $data): self
+    public static function deserialize(array $data): static
     {
-        Assertion::keyExists($data, 'id');
-        Assertion::keyExists($data, 'created_at');
+        $id = $data['id'];
+        assert(is_string($id));
+        $created_at = $data['created_at'];
+        assert(is_string($created_at));
 
         return new self(
-            new Uuid($data['id']),
-            new DateTimeImmutable($data['created_at'])
+            new Uuid($id),
+            new DateTimeImmutable($created_at)
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     #[\Override]
     public function serialize(): array
     {
@@ -143,18 +150,26 @@ final readonly class EventSourcedAggregateRootWasBazed implements DomainEventInt
     ) {
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     #[\Override]
-    public static function deserialize(array $data): self
+    public static function deserialize(array $data): static
     {
-        Assertion::keyExists($data, 'id');
-        Assertion::keyExists($data, 'updated_at');
+        $id = $data['id'];
+        assert(is_string($id));
+        $updated_at = $data['updated_at'];
+        assert(is_string($updated_at));
 
         return new self(
-            new Uuid($data['id']),
-            new DateTimeImmutable($data['updated_at'])
+            new Uuid($id),
+            new DateTimeImmutable($updated_at)
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     #[\Override]
     public function serialize(): array
     {

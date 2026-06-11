@@ -7,9 +7,12 @@ namespace Shared\ReadModel;
 use Shared\Domain\DomainEventInterface;
 use Shared\Domain\DomainMessage;
 use Shared\EventHandling\EventListenerInterface;
+use Shared\EventSourcing\ResolvesApplyMethodTrait;
 
 abstract readonly class AbstractProjector implements EventListenerInterface
 {
+    use ResolvesApplyMethodTrait;
+
     #[\Override]
     final public function __invoke(DomainMessage $message): void
     {
@@ -20,13 +23,9 @@ abstract readonly class AbstractProjector implements EventListenerInterface
             return;
         }
 
-        $this->$method($event);
-    }
+        /** @var callable(DomainEventInterface): void $handler */
+        $handler = [$this, $method];
 
-    private function applyMethod(DomainEventInterface $event): string
-    {
-        $className = explode('\\', $event::class);
-
-        return sprintf('apply%s', $className[count($className) - 1]);
+        $handler($event);
     }
 }

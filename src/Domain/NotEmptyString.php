@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Shared\Domain;
 
-use ProxyAssert\Assertion;
-
 final readonly class NotEmptyString
 {
     public string $string;
@@ -13,7 +11,9 @@ final readonly class NotEmptyString
     public function __construct(
         string $string,
     ) {
-        Assertion::notEmpty($string);
+        if ('' === $string) {
+            throw new \InvalidArgumentException('Value must not be empty.');
+        }
 
         $this->string = $string;
     }

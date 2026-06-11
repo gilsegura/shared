@@ -1,7 +1,51 @@
-/.idea/
-/.phpunit.cache/
-/report/
+# =========================
+# Dependencies
+# =========================
 /vendor/
-/.php-cs-fixer.cache
-/.phpunit.result.cache
-/composer.lock
+composer.lock
+
+# =========================
+# IDE / editors
+# =========================
+.idea/
+.vscode/
+
+# =========================
+# PHP CS Fixer
+# =========================
+.php-cs-fixer.cache
+
+# =========================
+# PHPUnit
+# =========================
+.phpunit.result.cache
+.phpunit.cache/
+
+# =========================
+# PHPStan / Static analysis
+# =========================
+/var/phpstan/
+/phpstan.neon.cache
+
+# =========================
+# Rector
+# =========================
+/rector/cache/
+
+# =========================
+# Reports / coverage / builds
+# =========================
+/report/
+/coverage/
+/build/
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# General runtime folder
+# =========================
+/var/

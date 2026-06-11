@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Shared\EventStore;
 
-final class EventStoreException extends \Exception
+use Shared\Exception\InfrastructureException;
+
+final class EventStoreException extends InfrastructureException
 {
     public static function throwable(\Throwable $e): self
     {
-        return new self($e->getMessage(), $e->getCode(), $e);
+        return new self($e->getMessage(), previous: $e);
     }
 }

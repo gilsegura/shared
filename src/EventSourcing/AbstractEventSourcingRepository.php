@@ -8,6 +8,9 @@ use Shared\Domain\Uuid;
 use Shared\EventHandling\EventBusInterface;
 use Shared\EventStore\EventStoreInterface;
 
+/**
+ * @template TAggregate of AggregateRootInterface
+ */
 abstract readonly class AbstractEventSourcingRepository
 {
     public function __construct(
@@ -19,6 +22,8 @@ abstract readonly class AbstractEventSourcingRepository
     }
 
     /**
+     * @return TAggregate
+     *
      * @throws EventSourcingRepositoryException
      */
     final protected function load(Uuid $id, ?int $playhead = null): AggregateRootInterface
@@ -26,13 +31,18 @@ abstract readonly class AbstractEventSourcingRepository
         try {
             $stream = $this->eventStore->load($id, $playhead);
 
-            return $this->aggregateRootFactory->__invoke($stream);
+            /** @var TAggregate $aggregateRoot */
+            $aggregateRoot = $this->aggregateRootFactory->__invoke($stream);
+
+            return $aggregateRoot;
         } catch (\Throwable $e) {
             throw EventSourcingRepositoryException::throwable($e);
         }
     }
 
     /**
+     * @param TAggregate $aggregateRoot
+     *
      * @throws EventSourcingRepositoryException
      */
     final protected function save(AggregateRootInterface $aggregateRoot): void

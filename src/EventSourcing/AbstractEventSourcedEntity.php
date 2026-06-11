@@ -8,6 +8,8 @@ use Shared\Domain\DomainEventInterface;
 
 abstract class AbstractEventSourcedEntity implements EventSourcedEntityInterface
 {
+    use ResolvesApplyMethodTrait;
+
     private ?AbstractEventSourcedAggregateRoot $aggregateRoot = null;
 
     /**
@@ -64,13 +66,9 @@ abstract class AbstractEventSourcedEntity implements EventSourcedEntityInterface
             return;
         }
 
-        $this->$method($event);
-    }
+        /** @var callable(DomainEventInterface): void $handler */
+        $handler = [$this, $method];
 
-    private function applyMethod(DomainEventInterface $event): string
-    {
-        $className = explode('\\', $event::class);
-
-        return sprintf('apply%s', $className[count($className) - 1]);
+        $handler($event);
     }
 }

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Shared\EventStore;
 
-use Shared\Domain\DomainException;
 use Shared\Domain\Uuid;
+use Shared\Exception\ConflictException;
 
-final class StreamAlreadyExistsException extends DomainException
+final class StreamAlreadyExistsException extends ConflictException
 {
     public static function playhead(Uuid $id, int $playhead): self
     {

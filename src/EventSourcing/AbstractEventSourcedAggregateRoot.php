@@ -11,6 +11,8 @@ use Shared\Domain\Metadata;
 
 abstract class AbstractEventSourcedAggregateRoot implements AggregateRootInterface
 {
+    use ResolvesApplyMethodTrait;
+
     /** @var DomainMessage[] */
     private array $uncommittedEvents = [];
 
@@ -88,13 +90,9 @@ abstract class AbstractEventSourcedAggregateRoot implements AggregateRootInterfa
             return;
         }
 
-        $this->$method($event);
-    }
+        /** @var callable(DomainEventInterface): void $handler */
+        $handler = [$this, $method];
 
-    private function applyMethod(DomainEventInterface $event): string
-    {
-        $className = explode('\\', $event::class);
-
-        return sprintf('apply%s', $className[count($className) - 1]);
+        $handler($event);
     }
 }

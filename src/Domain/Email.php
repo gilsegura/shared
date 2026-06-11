@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Shared\Domain;
 
-use ProxyAssert\Assertion;
-
 final readonly class Email
 {
     public string $email;
@@ -13,7 +11,9 @@ final readonly class Email
     public function __construct(
         string $email,
     ) {
-        Assertion::email($email);
+        if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new \InvalidArgumentException('Value must be a valid email address.');
+        }
 
         $this->email = $email;
     }

@@ -1,21 +1,21 @@
 {
     "name": "gilsegura/shared",
-    "description": "This is a project providing infrastructure for creating CQRS and ES applications.",
+    "description": "A lightweight infrastructure component for building CQRS and Event Sourcing applications in PHP.",
     "type": "library",
     "license": "MIT",
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": ">=8.3",
-        "gilsegura/assert": "dev-main",
-        "gilsegura/serializer": "dev-main",
+        "php": "^8.5",
+        "gilsegura/serializer": "^1.0",
         "ramsey/uuid": "^4.7"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^3",
-        "phpstan/phpstan": "^1",
-        "phpunit/phpunit": "^11",
-        "rector/rector": "^1"
+        "friendsofphp/php-cs-fixer": "^3.95",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpunit/phpunit": "^13.1",
+        "rector/rector": "^2.4"
     },
     "autoload": {
         "psr-4": {

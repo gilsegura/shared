@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Shared\Domain;
 
-use ProxyAssert\Assertion;
-
 final readonly class HashedPassword
 {
     private const int COST = 12;
@@ -22,14 +20,11 @@ final readonly class HashedPassword
 
     public static function encode(string $plainPassword): self
     {
-        Assertion::minLength($plainPassword, 6);
-
-        /** @var false|string $hashedPassword */
-        $hashedPassword = password_hash($plainPassword, PASSWORD_BCRYPT, ['cost' => self::COST]);
-
-        if (false === $hashedPassword) {
-            throw new \RuntimeException('An error occurred while hashing password.');
+        if (mb_strlen($plainPassword) < 6) {
+            throw new \InvalidArgumentException('Password must be at least 6 characters long.');
         }
+
+        $hashedPassword = password_hash($plainPassword, PASSWORD_BCRYPT, ['cost' => self::COST]);
 
         return new self($hashedPassword);
     }

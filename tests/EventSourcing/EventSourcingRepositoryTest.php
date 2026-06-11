@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Shared\Tests\EventSourcing;
 
 use PHPUnit\Framework\TestCase;
-use ProxyAssert\Assertion;
 use Shared\Domain\DateTimeImmutable;
 use Shared\Domain\DomainEventInterface;
 use Shared\Domain\Uuid;
@@ -56,6 +55,9 @@ final class EventSourcingRepositoryTest extends TestCase
     }
 }
 
+/**
+ * @extends AbstractEventSourcingRepository<AnotherEventSourcedAggregateRoot>
+ */
 final readonly class AnotherEventSourcedAggregateRootRepository extends AbstractEventSourcingRepository
 {
     /**
@@ -65,11 +67,10 @@ final readonly class AnotherEventSourcedAggregateRootRepository extends Abstract
     public function get(Uuid $id, ?int $playhead = null): AnotherEventSourcedAggregateRoot
     {
         try {
-            /* @phpstan-ignore return.type */
             return $this->load($id, $playhead);
         } catch (EventSourcingRepositoryException $e) {
             if ($e->getPrevious() instanceof StreamNotFoundException) {
-                throw NotFoundException::throwable($e);
+                throw new NotFoundException($e->getMessage(), $e->getCode(), previous: $e);
             }
 
             throw $e;
@@ -130,18 +131,26 @@ final readonly class AnotherEventSourcedAggregateRootWasCreated implements Domai
     ) {
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     #[\Override]
-    public static function deserialize(array $data): self
+    public static function deserialize(array $data): static
     {
-        Assertion::keyExists($data, 'id');
-        Assertion::keyExists($data, 'created_at');
+        $id = $data['id'];
+        assert(is_string($id));
+        $created_at = $data['created_at'];
+        assert(is_string($created_at));
 
         return new self(
-            new Uuid($data['id']),
-            new DateTimeImmutable($data['created_at'])
+            new Uuid($id),
+            new DateTimeImmutable($created_at)
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     #[\Override]
     public function serialize(): array
     {

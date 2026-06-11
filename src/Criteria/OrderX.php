@@ -6,13 +6,11 @@ namespace Shared\Criteria;
 
 final readonly class OrderX extends AbstractCriteria
 {
+    use MapsCriteriaToExpressionsTrait;
+
     public function __construct(
-        CriteriaInterface ...$criterias,
+        CriteriaInterface ...$criteria,
     ) {
-        parent::__construct(new Expr\OrderX(...array_map(
-            static function (CriteriaInterface $criteria): ExpressionInterface {
-                return $criteria->expr();
-            }, $criterias
-        )));
+        parent::__construct(new Expr\OrderX(...self::toExpressions($criteria)));
     }
 }

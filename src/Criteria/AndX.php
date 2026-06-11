@@ -6,13 +6,11 @@ namespace Shared\Criteria;
 
 final readonly class AndX extends AbstractCriteria
 {
+    use MapsCriteriaToExpressionsTrait;
+
     public function __construct(
-        CriteriaInterface ...$criterias,
+        CriteriaInterface ...$criteria,
     ) {
-        parent::__construct(new Expr\AndX(...array_map(
-            static function (CriteriaInterface $criteria): ExpressionInterface {
-                return $criteria->expr();
-            }, $criterias
-        )));
+        parent::__construct(new Expr\AndX(...self::toExpressions($criteria)));
     }
 }
