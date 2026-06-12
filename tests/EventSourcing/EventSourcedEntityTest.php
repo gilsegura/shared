@@ -133,7 +133,7 @@ final readonly class AnAggregateRootWasCreated implements DomainEventInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<array-key, mixed> $data
      */
     #[\Override]
     public static function deserialize(array $data): static
@@ -172,7 +172,7 @@ final readonly class AnAggregateRootWasAttached implements DomainEventInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<array-key, mixed> $data
      */
     #[\Override]
     public static function deserialize(array $data): static
@@ -256,7 +256,7 @@ final readonly class AnAggregatedEntityWasBazed implements DomainEventInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<array-key, mixed> $data
      */
     #[\Override]
     public static function deserialize(array $data): static

@@ -132,7 +132,7 @@ final readonly class AnotherEventSourcedAggregateRootWasCreated implements Domai
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<array-key, mixed> $data
      */
     #[\Override]
     public static function deserialize(array $data): static

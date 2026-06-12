@@ -57,7 +57,7 @@ final class SimpleEventBusTest extends TestCase
 final readonly class AnEvent implements DomainEventInterface
 {
     /**
-     * @param array<string, mixed> $data
+     * @param array<array-key, mixed> $data
      */
     #[\Override]
     public static function deserialize(array $data): static

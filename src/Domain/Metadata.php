@@ -9,7 +9,7 @@ use Serializer\SerializableInterface;
 final readonly class Metadata implements SerializableInterface
 {
     /**
-     * @param array<string, mixed> $values
+     * @param array<array-key, mixed> $values
      */
     private function __construct(
         public array $values,
@@ -28,20 +28,20 @@ final readonly class Metadata implements SerializableInterface
 
     public function merge(Metadata $metadata): self
     {
-        return new self(array_merge($this->values, $metadata->values));
+        return new self([...$this->values, ...$metadata->values]);
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<array-key, mixed> $attributes
      */
     #[\Override]
-    public static function deserialize(array $data): static
+    public static function deserialize(array $attributes): static
     {
-        return new self($data);
+        return new self($attributes);
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<array-key, mixed>
      */
     #[\Override]
     public function serialize(): array

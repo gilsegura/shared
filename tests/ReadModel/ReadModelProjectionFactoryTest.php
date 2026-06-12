@@ -67,7 +67,7 @@ final readonly class AggregateRootProjectionFactory extends AbstractProjector
 final readonly class EventWasOccurred implements DomainEventInterface
 {
     /**
-     * @param array<string, mixed> $data
+     * @param array<array-key, mixed> $data
      */
     #[\Override]
     public static function deserialize(array $data): static
@@ -88,7 +88,7 @@ final readonly class EventWasOccurred implements DomainEventInterface
 final readonly class AnotherEventWasOccurred implements DomainEventInterface
 {
     /**
-     * @param array<string, mixed> $data
+     * @param array<array-key, mixed> $data
      */
     #[\Override]
     public static function deserialize(array $data): static

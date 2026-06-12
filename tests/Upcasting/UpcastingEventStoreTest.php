@@ -99,7 +99,7 @@ final readonly class EventWasOccurredV1ToV2Upcaster implements UpcasterInterface
 final readonly class EventV1WasOccurred implements DomainEventInterface
 {
     /**
-     * @param array<string, mixed> $data
+     * @param array<array-key, mixed> $data
      */
     #[\Override]
     public static function deserialize(array $data): static
@@ -120,7 +120,7 @@ final readonly class EventV1WasOccurred implements DomainEventInterface
 final readonly class EventV2WasOccurred implements DomainEventInterface
 {
     /**
-     * @param array<string, mixed> $data
+     * @param array<array-key, mixed> $data
      */
     #[\Override]
     public static function deserialize(array $data): static

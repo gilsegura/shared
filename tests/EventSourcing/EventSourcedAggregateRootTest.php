@@ -113,7 +113,7 @@ final readonly class EventSourcedAggregateRootWasCreated implements DomainEventI
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<array-key, mixed> $data
      */
     #[\Override]
     public static function deserialize(array $data): static
@@ -151,7 +151,7 @@ final readonly class EventSourcedAggregateRootWasBazed implements DomainEventInt
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<array-key, mixed> $data
      */
     #[\Override]
     public static function deserialize(array $data): static

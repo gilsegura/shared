@@ -48,7 +48,7 @@ final readonly class MetadataEnricher implements MetadataEnricherInterface
 final readonly class AnotherEventWasOccurred implements DomainEventInterface
 {
     /**
-     * @param array<string, mixed> $data
+     * @param array<array-key, mixed> $data
      */
     #[\Override]
     public static function deserialize(array $data): static
