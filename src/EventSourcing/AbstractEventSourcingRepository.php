@@ -32,7 +32,7 @@ abstract readonly class AbstractEventSourcingRepository
             $stream = $this->eventStore->load($id, $playhead);
 
             /** @var TAggregate $aggregateRoot */
-            $aggregateRoot = $this->aggregateRootFactory->__invoke($stream);
+            $aggregateRoot = ($this->aggregateRootFactory)($stream);
 
             return $aggregateRoot;
         } catch (\Throwable $e) {
@@ -48,10 +48,10 @@ abstract readonly class AbstractEventSourcingRepository
     final protected function save(AggregateRootInterface $aggregateRoot): void
     {
         try {
-            $stream = $this->streamDecorator->__invoke($aggregateRoot->uncommittedEvents());
+            $stream = ($this->streamDecorator)($aggregateRoot->uncommittedEvents());
 
             $this->eventStore->append($stream);
-            $this->eventBus->__invoke($stream);
+            ($this->eventBus)($stream);
         } catch (\Throwable $e) {
             throw EventSourcingRepositoryException::throwable($e);
         }

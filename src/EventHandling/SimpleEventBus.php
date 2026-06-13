@@ -37,7 +37,7 @@ final class SimpleEventBus implements EventBusInterface
                 while ($message = array_shift($this->queue)) {
                     foreach ($this->eventListeners as $eventListener) {
                         try {
-                            $eventListener->__invoke($message);
+                            $eventListener($message);
                         } catch (\Throwable $e) {
                             throw EventBusException::throwable($e);
                         }

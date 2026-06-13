@@ -35,7 +35,7 @@ final readonly class UpcastingEventStore implements EventStoreInterface, EventSt
     private function upcast(DomainEventStream $stream): \Generator
     {
         foreach ($stream->messages as $message) {
-            yield from $this->upcaster->__invoke($message);
+            yield from ($this->upcaster)($message);
         }
     }
 

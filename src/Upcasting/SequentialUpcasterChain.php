@@ -21,7 +21,7 @@ final readonly class SequentialUpcasterChain implements UpcasterChainInterface
     public function __invoke(DomainMessage $message): \Generator
     {
         foreach ($this->upcasters as $upcaster) {
-            yield $upcaster->__invoke($message);
+            yield $upcaster($message);
         }
     }
 }

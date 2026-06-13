@@ -53,7 +53,7 @@ final class InMemoryEventStore implements EventStoreInterface, EventStoreManager
         $stream = $this->data[$id->uuid];
 
         foreach ($stream as $message) {
-            $eventVisitor->__invoke($message);
+            $eventVisitor($message);
         }
     }
 }

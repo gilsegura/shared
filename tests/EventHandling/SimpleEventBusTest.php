@@ -30,7 +30,7 @@ final class SimpleEventBusTest extends TestCase
 
         $bus = new SimpleEventBus(new ThrowableEventListener());
 
-        $bus->__invoke(new DomainEventStream($message));
+        $bus(new DomainEventStream($message));
     }
 
     public function test_must_publish_a_message(): void
@@ -45,7 +45,7 @@ final class SimpleEventBusTest extends TestCase
         $collector = new InMemoryEventCollector();
         $bus = new SimpleEventBus($collector);
 
-        $bus->__invoke(new DomainEventStream($message));
+        $bus(new DomainEventStream($message));
 
         $messages = $collector->messages();
         $message = $messages[0];

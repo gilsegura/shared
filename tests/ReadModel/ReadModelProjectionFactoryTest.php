@@ -19,7 +19,7 @@ final class ReadModelProjectionFactoryTest extends TestCase
         $collector = new Collector();
         $projector = new AggregateRootProjectionFactory($collector);
 
-        $projector->__invoke(DomainMessage::record(
+        $projector(DomainMessage::record(
             new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac'),
             0,
             Metadata::empty(),
@@ -38,7 +38,7 @@ final class ReadModelProjectionFactoryTest extends TestCase
         $collector = new Collector();
         $projector = new AggregateRootProjectionFactory($collector);
 
-        $projector->__invoke(DomainMessage::record(
+        $projector(DomainMessage::record(
             new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac'),
             0,
             Metadata::empty(),

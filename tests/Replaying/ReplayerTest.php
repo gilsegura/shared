@@ -23,7 +23,7 @@ final class ReplayerTest extends TestCase
         $criteria = new AndX(new EqId(new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac')));
 
         $replayer = new Replayer($eventStore, $eventVisitor);
-        $replayer->__invoke($criteria);
+        $replayer($criteria);
 
         self::assertSame($criteria, $eventStore->receivedCriteria);
         self::assertSame($eventVisitor, $eventStore->receivedVisitor);
