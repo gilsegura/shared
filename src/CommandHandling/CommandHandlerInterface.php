@@ -9,8 +9,4 @@ namespace Shared\CommandHandling;
  */
 interface CommandHandlerInterface
 {
-    /**
-     * @param TCommand $command
-     */
-    public function __invoke(CommandInterface $command): void;
 }

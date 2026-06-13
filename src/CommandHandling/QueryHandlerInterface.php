@@ -10,10 +10,4 @@ namespace Shared\CommandHandling;
  */
 interface QueryHandlerInterface
 {
-    /**
-     * @param TQuery $query
-     *
-     * @return TResult
-     */
-    public function __invoke(QueryInterface $query): mixed;
 }
