@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shared\Query;
 
+use Shared\CommandHandling\QueryInterface;
 use Shared\Criteria\AndX;
 use Shared\Criteria\CriteriaInterface;
 use Shared\Criteria\OrderX;
@@ -12,9 +13,11 @@ use Shared\Criteria\OrX;
 /**
  * Query that represents a collection result (findMany).
  *
- * @template TEntity
+ * @template TResult
+ *
+ * @implements QueryInterface<TResult[]>
  */
-abstract readonly class CollectionQuery extends QueryBuilder
+abstract readonly class CollectionQuery extends QueryBuilder implements QueryInterface
 {
     protected function __construct(
         AndX|OrX|CriteriaInterface|null $criteria = null,

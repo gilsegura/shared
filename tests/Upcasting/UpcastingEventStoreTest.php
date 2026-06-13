@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shared\Tests\Upcasting;
 
 use PHPUnit\Framework\TestCase;
+use Serializer\SerializableInterface;
 use Shared\Criteria;
 use Shared\Domain\DomainEventInterface;
 use Shared\Domain\DomainEventStream;
@@ -96,20 +97,17 @@ final readonly class EventWasOccurredV1ToV2Upcaster implements UpcasterInterface
     }
 }
 
-final readonly class EventV1WasOccurred implements DomainEventInterface
+/**
+ * @implements SerializableInterface<array{}>
+ */
+final readonly class EventV1WasOccurred implements DomainEventInterface, SerializableInterface
 {
-    /**
-     * @param array<array-key, mixed> $data
-     */
     #[\Override]
-    public static function deserialize(array $data): static
+    public static function deserialize(array $attributes): static
     {
         return new self();
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     #[\Override]
     public function serialize(): array
     {
@@ -117,20 +115,17 @@ final readonly class EventV1WasOccurred implements DomainEventInterface
     }
 }
 
-final readonly class EventV2WasOccurred implements DomainEventInterface
+/**
+ * @implements SerializableInterface<array{}>
+ */
+final readonly class EventV2WasOccurred implements DomainEventInterface, SerializableInterface
 {
-    /**
-     * @param array<array-key, mixed> $data
-     */
     #[\Override]
-    public static function deserialize(array $data): static
+    public static function deserialize(array $attributes): static
     {
         return new self();
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     #[\Override]
     public function serialize(): array
     {

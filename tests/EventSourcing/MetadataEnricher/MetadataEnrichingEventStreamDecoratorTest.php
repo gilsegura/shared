@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shared\Tests\EventSourcing\MetadataEnricher;
 
 use PHPUnit\Framework\TestCase;
+use Serializer\SerializableInterface;
 use Shared\Domain\DomainEventInterface;
 use Shared\Domain\DomainEventStream;
 use Shared\Domain\DomainMessage;
@@ -32,7 +33,7 @@ final class MetadataEnrichingEventStreamDecoratorTest extends TestCase
         $message = $messages[0];
         $metadata = $message->metadata;
 
-        self::assertSame(['foo' => 'bar'], $metadata->values);
+        self::assertSame(['foo' => 'bar'], $metadata->metadata);
     }
 }
 
@@ -45,20 +46,17 @@ final readonly class MetadataEnricher implements MetadataEnricherInterface
     }
 }
 
-final readonly class AnotherEventWasOccurred implements DomainEventInterface
+/**
+ * @implements SerializableInterface<array{}>
+ */
+final readonly class AnotherEventWasOccurred implements DomainEventInterface, SerializableInterface
 {
-    /**
-     * @param array<array-key, mixed> $data
-     */
     #[\Override]
-    public static function deserialize(array $data): static
+    public static function deserialize(array $attributes): static
     {
         return new self();
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     #[\Override]
     public function serialize(): array
     {

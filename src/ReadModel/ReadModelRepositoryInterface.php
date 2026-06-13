@@ -10,7 +10,7 @@ use Shared\Criteria\OrX;
 use Shared\Domain\Uuid;
 
 /**
- * @template TReadModel of SerializableReadModelInterface
+ * @template TReadModel of ReadModelInterface
  */
 interface ReadModelRepositoryInterface
 {
@@ -19,7 +19,7 @@ interface ReadModelRepositoryInterface
      *
      * @throws ReadModelRepositoryException
      */
-    public function oneOrException(Uuid $id): SerializableReadModelInterface;
+    public function oneOrException(Uuid $id): ReadModelInterface;
 
     /**
      * @return TReadModel[]
@@ -38,5 +38,5 @@ interface ReadModelRepositoryInterface
      *
      * @throws ReadModelRepositoryException
      */
-    public function save(SerializableReadModelInterface $readModel): void;
+    public function save(ReadModelInterface $readModel): void;
 }

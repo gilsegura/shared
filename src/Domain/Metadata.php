@@ -6,13 +6,16 @@ namespace Shared\Domain;
 
 use Serializer\SerializableInterface;
 
+/**
+ * @implements SerializableInterface<array<array-key, mixed>>
+ */
 final readonly class Metadata implements SerializableInterface
 {
     /**
-     * @param array<array-key, mixed> $values
+     * @param array<array-key, mixed> $metadata
      */
     private function __construct(
-        public array $values,
+        public array $metadata,
     ) {
     }
 
@@ -28,24 +31,20 @@ final readonly class Metadata implements SerializableInterface
 
     public function merge(Metadata $metadata): self
     {
-        return new self([...$this->values, ...$metadata->values]);
+        return clone ($this, [
+            'metadata' => [...$this->metadata, ...$metadata->metadata],
+        ]);
     }
 
-    /**
-     * @param array<array-key, mixed> $attributes
-     */
     #[\Override]
     public static function deserialize(array $attributes): static
     {
         return new self($attributes);
     }
 
-    /**
-     * @return array<array-key, mixed>
-     */
     #[\Override]
     public function serialize(): array
     {
-        return $this->values;
+        return $this->metadata;
     }
 }

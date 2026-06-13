@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shared\Tests\EventSourcing;
 
 use PHPUnit\Framework\TestCase;
+use Serializer\SerializableInterface;
 use Shared\Domain\DateTimeImmutable;
 use Shared\Domain\DomainEventInterface;
 use Shared\Domain\Uuid;
@@ -123,7 +124,13 @@ final class AnotherEventSourcedAggregateRoot extends AbstractEventSourcedAggrega
     }
 }
 
-final readonly class AnotherEventSourcedAggregateRootWasCreated implements DomainEventInterface
+/**
+ * @implements SerializableInterface<array{
+ *     id: string,
+ *     created_at: string
+ * }>
+ */
+final readonly class AnotherEventSourcedAggregateRootWasCreated implements DomainEventInterface, SerializableInterface
 {
     public function __construct(
         public Uuid $id,
@@ -131,26 +138,15 @@ final readonly class AnotherEventSourcedAggregateRootWasCreated implements Domai
     ) {
     }
 
-    /**
-     * @param array<array-key, mixed> $data
-     */
     #[\Override]
-    public static function deserialize(array $data): static
+    public static function deserialize(array $attributes): static
     {
-        $id = $data['id'];
-        assert(is_string($id));
-        $created_at = $data['created_at'];
-        assert(is_string($created_at));
-
         return new self(
-            new Uuid($id),
-            new DateTimeImmutable($created_at)
+            new Uuid($attributes['id']),
+            new DateTimeImmutable($attributes['created_at']),
         );
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     #[\Override]
     public function serialize(): array
     {

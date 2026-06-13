@@ -14,6 +14,6 @@ final class MetadataTest extends TestCase
         $some = Metadata::empty();
         $another = $some->merge(Metadata::kv('foo', 'bar'));
 
-        self::assertSame(['foo' => 'bar'], $another->values);
+        self::assertSame(['foo' => 'bar'], $another->metadata);
     }
 }

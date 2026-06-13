@@ -6,16 +6,12 @@ namespace Shared\Domain;
 
 final readonly class NotEmptyString
 {
-    public string $string;
-
     public function __construct(
-        string $string,
+        public string $string,
     ) {
-        if ('' === $string) {
+        if ('' === $this->string) {
             throw new \InvalidArgumentException('Value must not be empty.');
         }
-
-        $this->string = $string;
     }
 
     public function equals(NotEmptyString $string): bool

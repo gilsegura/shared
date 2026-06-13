@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shared\Tests\ReadModel;
 
 use PHPUnit\Framework\TestCase;
+use Serializer\SerializableInterface;
 use Shared\Domain\DomainEventInterface;
 use Shared\Domain\DomainMessage;
 use Shared\Domain\Metadata;
@@ -64,20 +65,17 @@ final readonly class AggregateRootProjectionFactory extends AbstractProjector
     }
 }
 
-final readonly class EventWasOccurred implements DomainEventInterface
+/**
+ * @implements SerializableInterface<array{}>
+ */
+final readonly class EventWasOccurred implements DomainEventInterface, SerializableInterface
 {
-    /**
-     * @param array<array-key, mixed> $data
-     */
     #[\Override]
-    public static function deserialize(array $data): static
+    public static function deserialize(array $attributes): static
     {
         return new self();
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     #[\Override]
     public function serialize(): array
     {
@@ -85,20 +83,17 @@ final readonly class EventWasOccurred implements DomainEventInterface
     }
 }
 
-final readonly class AnotherEventWasOccurred implements DomainEventInterface
+/**
+ * @implements SerializableInterface<array{}>
+ */
+final readonly class AnotherEventWasOccurred implements DomainEventInterface, SerializableInterface
 {
-    /**
-     * @param array<array-key, mixed> $data
-     */
     #[\Override]
-    public static function deserialize(array $data): static
+    public static function deserialize(array $attributes): static
     {
         return new self();
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     #[\Override]
     public function serialize(): array
     {

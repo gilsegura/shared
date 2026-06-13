@@ -8,16 +8,12 @@ use Ramsey\Uuid\Uuid as Generator;
 
 final readonly class Uuid
 {
-    public string $uuid;
-
     public function __construct(
-        string $uuid,
+        public string $uuid,
     ) {
-        if (1 !== preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iD', $uuid)) {
+        if (!Generator::isValid($this->uuid)) {
             throw new \InvalidArgumentException('Value must be a valid UUID.');
         }
-
-        $this->uuid = $uuid;
     }
 
     public function equals(Uuid $uuid): bool

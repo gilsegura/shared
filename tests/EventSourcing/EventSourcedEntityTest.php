@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shared\Tests\EventSourcing;
 
 use PHPUnit\Framework\TestCase;
+use Serializer\SerializableInterface;
 use Shared\Domain\DateTimeImmutable;
 use Shared\Domain\DomainEventInterface;
 use Shared\Domain\DomainMessage;
@@ -124,7 +125,13 @@ final class AnAggregateRoot extends AbstractEventSourcedAggregateRoot
     }
 }
 
-final readonly class AnAggregateRootWasCreated implements DomainEventInterface
+/**
+ * @implements SerializableInterface<array{
+ *     id: string,
+ *     created_at: string
+ * }>
+ */
+final readonly class AnAggregateRootWasCreated implements DomainEventInterface, SerializableInterface
 {
     public function __construct(
         public Uuid $id,
@@ -132,26 +139,15 @@ final readonly class AnAggregateRootWasCreated implements DomainEventInterface
     ) {
     }
 
-    /**
-     * @param array<array-key, mixed> $data
-     */
     #[\Override]
-    public static function deserialize(array $data): static
+    public static function deserialize(array $attributes): static
     {
-        $id = $data['id'];
-        assert(is_string($id));
-        $created_at = $data['created_at'];
-        assert(is_string($created_at));
-
         return new self(
-            new Uuid($id),
-            new DateTimeImmutable($created_at)
+            new Uuid($attributes['id']),
+            new DateTimeImmutable($attributes['created_at']),
         );
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     #[\Override]
     public function serialize(): array
     {
@@ -162,7 +158,14 @@ final readonly class AnAggregateRootWasCreated implements DomainEventInterface
     }
 }
 
-final readonly class AnAggregateRootWasAttached implements DomainEventInterface
+/**
+ * @implements SerializableInterface<array{
+ *     an_aggregate_root_id: string,
+ *     id: string,
+ *     updated_at: string
+ * }>
+ */
+final readonly class AnAggregateRootWasAttached implements DomainEventInterface, SerializableInterface
 {
     public function __construct(
         public Uuid $anAggregateRootId,
@@ -171,29 +174,16 @@ final readonly class AnAggregateRootWasAttached implements DomainEventInterface
     ) {
     }
 
-    /**
-     * @param array<array-key, mixed> $data
-     */
     #[\Override]
-    public static function deserialize(array $data): static
+    public static function deserialize(array $attributes): static
     {
-        $an_aggregate_root_id = $data['an_aggregate_root_id'];
-        assert(is_string($an_aggregate_root_id));
-        $id = $data['id'];
-        assert(is_string($id));
-        $updated_at = $data['updated_at'];
-        assert(is_string($updated_at));
-
         return new self(
-            new Uuid($an_aggregate_root_id),
-            new Uuid($id),
-            new DateTimeImmutable($updated_at)
+            new Uuid($attributes['an_aggregate_root_id']),
+            new Uuid($attributes['id']),
+            new DateTimeImmutable($attributes['updated_at']),
         );
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     #[\Override]
     public function serialize(): array
     {
@@ -247,7 +237,13 @@ final class AnAggregatedEntity extends AbstractEventSourcedEntity
     }
 }
 
-final readonly class AnAggregatedEntityWasBazed implements DomainEventInterface
+/**
+ * @implements SerializableInterface<array{
+ *     id: string,
+ *     updated_at: string
+ * }>
+ */
+final readonly class AnAggregatedEntityWasBazed implements DomainEventInterface, SerializableInterface
 {
     public function __construct(
         public Uuid $id,
@@ -255,26 +251,15 @@ final readonly class AnAggregatedEntityWasBazed implements DomainEventInterface
     ) {
     }
 
-    /**
-     * @param array<array-key, mixed> $data
-     */
     #[\Override]
-    public static function deserialize(array $data): static
+    public static function deserialize(array $attributes): static
     {
-        $id = $data['id'];
-        assert(is_string($id));
-        $updated_at = $data['updated_at'];
-        assert(is_string($updated_at));
-
         return new self(
-            new Uuid($id),
-            new DateTimeImmutable($updated_at)
+            new Uuid($attributes['id']),
+            new DateTimeImmutable($attributes['updated_at']),
         );
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     #[\Override]
     public function serialize(): array
     {
