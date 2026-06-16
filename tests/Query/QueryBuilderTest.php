@@ -69,7 +69,7 @@ final class QueryBuilderTest extends TestCase
 /**
  * @extends SingleResultQuery<object>
  */
-final readonly class TestQuery extends SingleResultQuery
+final class TestQuery extends SingleResultQuery
 {
     public static function of(): self
     {

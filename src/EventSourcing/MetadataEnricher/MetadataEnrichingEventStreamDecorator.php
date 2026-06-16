@@ -32,11 +32,11 @@ final readonly class MetadataEnrichingEventStreamDecorator implements EventStrea
     private function enrich(DomainEventStream $stream): \Generator
     {
         foreach ($stream->messages as $message) {
-            $metadata = Metadata::empty();
-
-            foreach ($this->enrichers as $enricher) {
-                $metadata = $enricher->enrich($metadata);
-            }
+            $metadata = array_reduce(
+                $this->enrichers,
+                static fn (Metadata $carry, MetadataEnricherInterface $enricher): Metadata => $enricher->enrich($carry),
+                Metadata::empty(),
+            );
 
             yield $message->addMetadata($metadata);
         }

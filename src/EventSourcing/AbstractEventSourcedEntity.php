@@ -62,13 +62,8 @@ abstract class AbstractEventSourcedEntity implements EventSourcedEntityInterface
     {
         $method = $this->applyMethod($event);
 
-        if (!method_exists($this, $method)) {
-            return;
+        if (method_exists($this, $method)) {
+            $this->{$method}($event); // @phpstan-ignore method.dynamicName
         }
-
-        /** @var callable(DomainEventInterface): void $handler */
-        $handler = [$this, $method];
-
-        $handler($event);
     }
 }

@@ -9,27 +9,35 @@ use Shared\Criteria\CriteriaInterface;
 use Shared\Criteria\OrX;
 
 /**
- * Base DSL builder.
+ * Base DSL builder. Effectively immutable: it exposes no setters, only fluent
+ * operations that return a clone with one property changed. The properties are
+ * not readonly because a builder is reconstructed by cloning (PHP cannot rewrite
+ * a readonly property on a clone), but nothing mutates an existing instance.
  */
-abstract readonly class QueryBuilder
+abstract class QueryBuilder
 {
     protected function __construct(
         protected AndX|OrX|CriteriaInterface|null $criteria = null,
     ) {
     }
 
-    protected function where(CriteriaInterface $criteria): static
+    /**
+     * Returns a clone of this builder with one property changed, preserving the
+     * concrete subclass type.
+     */
+    protected function with(string $property, mixed $value): static
     {
-        return clone ($this, [
-            'criteria' => $this->criteria instanceof CriteriaInterface
-                ? new AndX($this->criteria, $criteria)
-                : $criteria,
-        ]);
+        $clone = clone $this;
+        $clone->{$property} = $value; // @phpstan-ignore property.dynamicName
+
+        return $clone;
     }
 
-    private function sub(): static
+    protected function where(CriteriaInterface $criteria): static
     {
-        return clone $this;
+        return $this->with('criteria', $this->criteria instanceof CriteriaInterface
+            ? new AndX($this->criteria, $criteria)
+            : $criteria);
     }
 
     /**
@@ -37,16 +45,7 @@ abstract readonly class QueryBuilder
      */
     public function andX(callable $callback): static
     {
-        $sub = $callback($this->sub());
-
-        $criteria = array_values(array_filter(
-            [$this->criteria, $sub->criteria()],
-            static fn (AndX|OrX|CriteriaInterface|null $criterion): bool => $criterion instanceof CriteriaInterface,
-        ));
-
-        return clone ($this, [
-            'criteria' => new AndX(...$criteria),
-        ]);
+        return $this->with('criteria', new AndX(...$this->combine($callback)));
     }
 
     /**
@@ -54,20 +53,29 @@ abstract readonly class QueryBuilder
      */
     public function orX(callable $callback): static
     {
-        $sub = $callback($this->sub());
-
-        $criteria = array_values(array_filter(
-            [$this->criteria, $sub->criteria()],
-            static fn (AndX|OrX|CriteriaInterface|null $criterion): bool => $criterion instanceof CriteriaInterface,
-        ));
-
-        return clone ($this, [
-            'criteria' => new OrX(...$criteria),
-        ]);
+        return $this->with('criteria', new OrX(...$this->combine($callback)));
     }
 
     public function criteria(): AndX|OrX|CriteriaInterface|null
     {
         return $this->criteria;
+    }
+
+    /**
+     * Runs the sub-builder callback and returns this builder's criteria plus the
+     * sub-builder's, dropping any that are absent.
+     *
+     * @param callable(static): static $callback
+     *
+     * @return CriteriaInterface[]
+     */
+    private function combine(callable $callback): array
+    {
+        $sub = $callback(clone $this);
+
+        return array_values(array_filter(
+            [$this->criteria, $sub->criteria()],
+            static fn (AndX|OrX|CriteriaInterface|null $criterion): bool => $criterion instanceof CriteriaInterface,
+        ));
     }
 }

@@ -31,9 +31,7 @@ final readonly class Metadata implements SerializableInterface
 
     public function merge(Metadata $metadata): self
     {
-        return clone ($this, [
-            'metadata' => [...$this->metadata, ...$metadata->metadata],
-        ]);
+        return new self([...$this->metadata, ...$metadata->metadata]);
     }
 
     #[\Override]

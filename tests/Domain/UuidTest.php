@@ -6,12 +6,13 @@ namespace Shared\Tests\Domain;
 
 use PHPUnit\Framework\TestCase;
 use Shared\Domain\Uuid;
+use Shared\Exception\InvalidInputException;
 
 final class UuidTest extends TestCase
 {
     public function test_must_throw_assertion_failed_exception(): void
     {
-        self::expectException(\InvalidArgumentException::class);
+        self::expectException(InvalidInputException::class);
 
         new Uuid('1');
     }

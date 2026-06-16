@@ -17,7 +17,7 @@ use Shared\Criteria\OrX;
  *
  * @implements QueryInterface<TResult[]>
  */
-abstract readonly class CollectionQuery extends QueryBuilder implements QueryInterface
+abstract class CollectionQuery extends QueryBuilder implements QueryInterface
 {
     protected function __construct(
         AndX|OrX|CriteriaInterface|null $criteria = null,
@@ -30,23 +30,17 @@ abstract readonly class CollectionQuery extends QueryBuilder implements QueryInt
 
     public function orderBy(OrderX $sort): static
     {
-        return clone ($this, [
-            'sort' => $sort,
-        ]);
+        return $this->with('sort', $sort);
     }
 
     public function withOffset(int $offset): static
     {
-        return clone ($this, [
-            'offset' => $offset,
-        ]);
+        return $this->with('offset', $offset);
     }
 
     public function withLimit(int $limit): static
     {
-        return clone ($this, [
-            'limit' => $limit,
-        ]);
+        return $this->with('limit', $limit);
     }
 
     public function order(): ?OrderX

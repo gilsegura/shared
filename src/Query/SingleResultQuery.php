@@ -13,6 +13,6 @@ use Shared\CommandHandling\QueryInterface;
  *
  * @implements QueryInterface<TResult|null>
  */
-abstract readonly class SingleResultQuery extends QueryBuilder implements QueryInterface
+abstract class SingleResultQuery extends QueryBuilder implements QueryInterface
 {
 }

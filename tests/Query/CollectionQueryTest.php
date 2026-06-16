@@ -65,7 +65,7 @@ final class CollectionQueryTest extends TestCase
 /**
  * @extends CollectionQuery<object>
  */
-final readonly class TestCollectionQuery extends CollectionQuery
+final class TestCollectionQuery extends CollectionQuery
 {
     public static function of(): self
     {

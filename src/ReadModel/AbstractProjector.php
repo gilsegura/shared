@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shared\ReadModel;
 
-use Shared\Domain\DomainEventInterface;
 use Shared\Domain\DomainMessage;
 use Shared\EventHandling\EventListenerInterface;
 use Shared\EventSourcing\ResolvesApplyMethodTrait;
@@ -19,13 +18,8 @@ abstract readonly class AbstractProjector implements EventListenerInterface
         $event = $message->payload;
         $method = $this->applyMethod($event);
 
-        if (!method_exists($this, $method)) {
-            return;
+        if (method_exists($this, $method)) {
+            $this->{$method}($event); // @phpstan-ignore method.dynamicName
         }
-
-        /** @var callable(DomainEventInterface): void $handler */
-        $handler = [$this, $method];
-
-        $handler($event);
     }
 }

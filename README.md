@@ -5,30 +5,12 @@
 [![static analysis](https://github.com/gilsegura/shared/actions/workflows/static-analysis.yaml/badge.svg)](https://github.com/gilsegura/shared/actions/workflows/static-analysis.yaml)
 [![coding standards](https://github.com/gilsegura/shared/actions/workflows/coding-standards.yaml/badge.svg)](https://github.com/gilsegura/shared/actions/workflows/coding-standards.yaml)
 
-A lightweight, framework-agnostic infrastructure component for building CQRS and
-Event Sourcing applications in PHP.
-
-It provides the building blocks for event-sourced aggregates, an event store
-abstraction with upcasting and replaying, read-model projections, a
-criteria-based query layer, command and query buses, a set of immutable domain
-value objects, and a semantic exception hierarchy. Every layer is an interface
-first, so applications wire their own infrastructure (Doctrine, Messenger, etc.)
-at the boundary.
-
-## Features
-
-* PHP 8.5+
-* Event Sourcing building blocks: aggregates, entities, domain messages and streams
-* Event store abstraction with an upcasting layer and a replaying layer
-* Read-model projections and a generic repository contract
-* Command and query buses (CQRS) with type-safe handlers
-* Criteria-based query layer with a fluent query builder
-* Immutable domain value objects (`Uuid`, `Email`, `DateTimeImmutable`, ...)
-* Serializable contracts backed by `gilsegura/serializer`
-* Semantic, transport-agnostic exception hierarchy
-* Strong static typing with generics
-* Immutable design throughout
-* Framework agnostic
+Framework-agnostic building blocks for Domain-Driven Design, Event Sourcing and
+CQRS. It gives you the domain primitives (value objects, aggregates, events),
+the write side (event store, event bus, repositories), the read side (read
+models, projectors), and a small typed criteria/query DSL — without tying you
+to any framework. The Symfony/Doctrine integration lives in the companion
+`gilsegura/shared-bundle`.
 
 ## Installation
 
@@ -36,315 +18,105 @@ at the boundary.
 composer require gilsegura/shared
 ```
 
-## Architecture
+Requires PHP 8.4+, `ext-mbstring`, `gilsegura/serializer` and `ramsey/uuid`.
 
-The component is organised into focused namespaces under `Shared\`:
+## What's inside
 
-| Namespace | Responsibility |
-| --- | --- |
-| `Domain` | Value objects, domain events, metadata, the domain message envelope |
-| `EventSourcing` | Aggregate roots, entities, the event-sourcing repository |
-| `EventStore` | Event store abstraction, manager and visitor |
-| `EventHandling` | Event bus and listeners |
-| `Upcasting` | Event upcasting chain over a decorated store |
-| `Replaying` | Re-dispatching stored events to listeners |
-| `ReadModel` | Read models, projectors and their repository |
-| `CommandHandling` | Command and query buses, handlers and messages |
-| `Query` | Fluent query builders on top of `Criteria` |
-| `Criteria` | Composable criteria and ordering expressions |
-| `Specification` | Specification base class |
-| `Exception` | Semantic, transport-agnostic exception hierarchy |
+### Domain primitives
 
-## Domain
-
-### Value objects
-
-The `Domain` namespace ships immutable value objects used across the component.
-Each is `final readonly` and exposes an `equals()` method for comparison by
-value:
-
-* `Uuid` — a UUID, with `Uuid::uuid4()` to generate one and `equals()` to compare.
-* `Email` — a validated email address.
-* `DateTimeImmutable` — a wrapper with `now()`, `fromTimestamp()`, `toTimestamp()`, `addSeconds()`, `subSeconds()` and `equals()`.
-* `NotEmptyString` — a string guaranteed not to be empty.
-* `HashedPassword` — a password hash, with `encode()` to hash a plaintext password and `match()` to verify one.
-
-`IdentifiableInterface` marks anything addressable by a `Uuid` through `id()`.
-
-### Domain events
-
-A domain event implements `DomainEventInterface` (a domain marker) together with
-`SerializableInterface` from `gilsegura/serializer`. The serialized shape is
-declared once, in the class `@implements` tag, which lets static analysis type
-every attribute without casts or assertions:
+Small, immutable value objects with enforced invariants: `Uuid`, `Email`,
+`NotEmptyString`, `HashedPassword`, `Metadata`, `DateTimeImmutable`. Each
+validates on construction and fails with an `InvalidInputException` that names
+the problem and includes the offending value:
 
 ```php
-use Serializer\SerializableInterface;
-use Shared\Domain\DomainEventInterface;
+use Shared\Domain\Email;
+use Shared\Domain\Uuid;
 
-/**
- * @implements SerializableInterface<array{
- *     id: string,
- *     created_at: string
- * }>
- */
-final readonly class OrderWasPlaced implements DomainEventInterface, SerializableInterface
+$id = Uuid::uuid4();
+$email = new Email('ada@example.com');   // throws InvalidInputException if invalid
+$email->equals(new Email('ADA@example.com')); // true — emails compare case-insensitively
+```
+
+Events are plain objects implementing `DomainEventInterface`; a recorded event
+is wrapped in a `DomainMessage` (id, playhead, metadata, payload, timestamp).
+
+### Event-sourced aggregates
+
+Extend `AbstractEventSourcedAggregateRoot`: apply events, let the playhead and
+the uncommitted-event stream be tracked for you, and rebuild state from history
+through `apply{EventName}` methods resolved by convention.
+
+```php
+final class Account extends AbstractEventSourcedAggregateRoot
 {
-    public function __construct(
-        public Uuid $id,
-        public DateTimeImmutable $createdAt,
-    ) {
+    public function withdraw(Money $amount): void
+    {
+        $this->apply(new MoneyWithdrawn($this->id, $amount));
     }
 
-    public static function deserialize(array $attributes): static
+    protected function applyMoneyWithdrawn(MoneyWithdrawn $event): void
     {
-        return new self(
-            new Uuid($attributes['id']),
-            new DateTimeImmutable($attributes['created_at']),
-        );
-    }
-
-    public function serialize(): array
-    {
-        return [
-            'id' => $this->id->uuid,
-            'created_at' => $this->createdAt->dateTime,
-        ];
+        $this->balance = $this->balance->subtract($event->amount);
     }
 }
 ```
 
-### Domain message and stream
+Child entities are supported through `AbstractEventSourcedEntity` and
+`childEntities()`, so events are handled recursively across the aggregate.
 
-A `DomainMessage` is the envelope recorded for each event: it carries the
-aggregate `id`, the `playhead` (sequence number), `Metadata`, the event
-`payload`, a `recordedAt` timestamp and a derived `type` string. Messages are
-grouped into an ordered `DomainEventStream`.
+### Write side
 
-### Metadata
+- `EventStoreInterface` / `EventStoreManagerInterface` — append and load streams.
+- `SimpleEventBus` — publishes domain messages to listeners, with a reentrancy
+  guard so events emitted while publishing are queued and drained in order.
+- `AbstractEventSourcingRepository` — load/save aggregates from the event store.
+- `MetadataEnrichingEventStreamDecorator` + `MetadataEnricherInterface` — attach
+  cross-cutting metadata (correlation, causation, actor) as events are stored.
+- `SequentialUpcasterChain` / `UpcastingEventStore` — evolve old event shapes on
+  read through an upcaster chain.
 
-`Metadata` is an immutable, serializable bag of key/value pairs attached to a
-message. Build one with `Metadata::empty()` or `Metadata::kv($key, $value)`, and
-combine two with `merge()`, which returns a new instance:
+### Read side
 
-```php
-$metadata = Metadata::kv('correlation_id', $correlationId)
-    ->merge(Metadata::kv('user_id', $userId));
-```
+- `ReadModelInterface` / `ReadModelRepositoryInterface` — your projections.
+- `AbstractProjector` — build read models by reacting to domain events.
+- `Replayer` — rebuild projections from the event store.
 
-## Event Sourcing
+### Command & query buses
 
-### Aggregates and entities
+`CommandBusInterface`, `QueryBusInterface` and their handler interfaces give you
+a typed CQRS seam. Queries are built with a small immutable DSL.
 
-An aggregate extends `AbstractEventSourcedAggregateRoot`. It records events by
-calling `apply()`, which appends a `DomainMessage` to the uncommitted events and
-dispatches the event to a conventionally named `apply<EventName>()` method.
-State is rebuilt from a stream with `initialize()`:
+### The criteria / query DSL
 
-```php
-final class Order extends AbstractEventSourcedAggregateRoot
-{
-    private Uuid $id;
-
-    public static function place(Uuid $id): self
-    {
-        $order = new self();
-        $order->apply(new OrderWasPlaced($id, DateTimeImmutable::now()));
-
-        return $order;
-    }
-
-    protected function applyOrderWasPlaced(OrderWasPlaced $event): void
-    {
-        $this->id = $event->id;
-    }
-
-    public function id(): Uuid
-    {
-        return $this->id;
-    }
-}
-```
-
-Child entities extend `AbstractEventSourcedEntity` and are returned from the
-aggregate's `childEntities()`, so events propagate recursively through the
-aggregate tree. The `apply<EventName>()` resolution is provided by
-`ResolvesApplyMethodTrait`.
-
-### Repository
-
-`AbstractEventSourcingRepository` loads and stores aggregates through an
-`EventStoreInterface`, reconstituting them with an
-`AggregateRootFactoryInterface`. `PublicConstructorAggregateRootFactory` builds
-aggregates that expose a public constructor.
-
-### Stream decorators
-
-`EventStreamDecoratorInterface` transforms a stream as it is persisted. The
-`MetadataEnricher` decorator (`MetadataEnrichingEventStreamDecorator` plus
-`MetadataEnricherInterface`) enriches each message's metadata before it is
-stored.
-
-## Event store
-
-`EventStoreInterface` abstracts stream persistence with `load()` (optionally up
-to a given playhead) and `append()`. `EventStoreManagerInterface` adds
-`visitEvents()`, which walks events matching a criteria through an
-`EventVisitorInterface`. `CallableEventVisitor` adapts a callable into a
-visitor.
-
-Loading a missing or already-existing stream raises `StreamNotFoundException`
-and `StreamAlreadyExistsException` respectively.
-
-## Upcasting
-
-The `Upcasting` layer migrates stored events to newer shapes on read.
-`UpcastingEventStore` decorates an event store and runs each message through an
-`UpcasterChainInterface`. `SequentialUpcasterChain` applies a sequence of
-`UpcasterInterface` instances, each rewriting a `DomainMessage` into a newer
-version. This keeps old events on disk while presenting the current shape to the
-domain.
-
-## Replaying
-
-`Replayer` re-reads stored events matching a criteria and re-dispatches them,
-which is useful for rebuilding read models or projections from history.
-
-## Event handling
-
-`EventBusInterface` publishes a `DomainEventStream` to registered
-`EventListenerInterface` listeners. `SimpleEventBus` is an in-memory
-implementation that forwards each message to every subscribed listener.
-Listener failures surface as `EventBusException`.
-
-## Read models
-
-A read model implements `ReadModelInterface` (which extends
-`IdentifiableInterface`) together with `SerializableInterface`. Read models are
-populated by projectors extending `AbstractProjector`, whose
-`apply<EventName>()` methods react to incoming messages, and are retrieved
-through the generic `ReadModelRepositoryInterface`:
+Queries are assembled fluently and immutably. `SingleResultQuery` (findOne) and
+`CollectionQuery` (findMany) build a criteria tree with `where`, `andX`, `orX`,
+and — for collections — `orderBy`, `withOffset`, `withLimit`. Each operation
+returns a new builder, so a query is safe to share and refine:
 
 ```php
-/**
- * @template TReadModel of ReadModelInterface
- */
-interface ReadModelRepositoryInterface
-{
-    /** @return TReadModel */
-    public function oneOrException(Uuid $id): ReadModelInterface;
-
-    /** @return TReadModel[] */
-    public function findBy(/* criteria, sort, offset, limit */): array;
-
-    /** @param TReadModel $readModel */
-    public function save(ReadModelInterface $readModel): void;
-}
-```
-
-Missing read models raise `ReadModelRepositoryException`.
-
-## Command and query handling (CQRS)
-
-The `CommandHandling` namespace separates writes from reads.
-
-Commands implement `CommandInterface`, are handled by a
-`CommandHandlerInterface<TCommand>` and dispatched through `CommandBusInterface`,
-which returns nothing.
-
-Queries implement `QueryInterface<TResult>` and are dispatched through
-`QueryBusInterface`, which preserves the query's result type. A handler
-(`QueryHandlerInterface<TResult, TQuery>`) returns a read model, a list of read
-models, or `null` when nothing is found. The bus returns exactly that type:
-
-```php
-interface QueryBusInterface
-{
-    /**
-     * @template TResult
-     *
-     * @param QueryInterface<TResult> $query
-     *
-     * @return TResult
-     */
-    public function __invoke(QueryInterface $query): mixed;
-}
-```
-
-The typical flow is `query → query bus → query handler → repository → read
-model` (or `read model[]` for a collection).
-
-## Query layer
-
-Queries are built on top of the `Criteria` layer. `QueryBuilder` is the base
-fluent builder; `SingleResultQuery<TResult>` resolves to a single result (or
-`null`) and `CollectionQuery<TResult>` resolves to a list, adding ordering,
-offset and limit:
-
-```php
-$query = SomeCollectionQuery::of()
-    ->orderBy($sort)
-    ->withOffset(0)
+$query = FindPosts::create()
+    ->andX(fn (FindPosts $q) => $q->publishedOnly()->byAuthor($authorId))
+    ->orderBy(OrderX::desc('createdAt'))
     ->withLimit(20);
 ```
 
-Each builder method returns a new instance, keeping queries immutable.
+The criteria (`AndX`, `OrX`, `Comparison`, `OrderX`…) map to a backend-agnostic
+expression tree that the infrastructure layer (e.g. Doctrine in
+`shared-bundle`) translates to a real query.
 
-## Criteria
+## Design notes
 
-The `Criteria` namespace composes query predicates independently of any storage
-engine. `CriteriaInterface` exposes an `expr()` returning an
-`ExpressionInterface`. Criteria combine through `AndX` and `OrX`, and ordering
-is expressed with `OrderX`. Ready-made criteria include `EqId`, `EqEmail`,
-`EqPlayhead`, `ByPlayhead` and `ByRecordedAt`. The underlying expression model
-lives under `Criteria\Expr` (comparisons, composites, operators and sorting),
-letting an infrastructure adapter translate criteria into its own query
-language.
-
-## Specifications
-
-`AbstractSpecification` provides a base for the Specification pattern, useful
-for encapsulating reusable business rules that can be evaluated against domain
-objects.
-
-## Exceptions
-
-The component exposes a semantic exception hierarchy under `Shared\Exception`.
-Each category describes the nature of the failure, not its transport
-representation:
-
-* `NotFoundException`
-* `ConflictException`
-* `InvalidInputException`
-* `UnauthorizedException`
-* `ForbiddenException`
-* `UnexpectedException`
-* `InfrastructureException`
-
-Exceptions carry no error codes or HTTP semantics. Mapping a category to a
-concrete protocol response is left to each application at its boundary.
-
-## Serialization
-
-Domain events, read models and metadata implement
-`SerializableInterface<TAttributes>` from `gilsegura/serializer`, where
-`TAttributes` is the concrete shape of the serialized array, declared in the
-class `@implements` tag. Because the shape is known statically, `deserialize()`
-reads its attributes with no casts or assertions. Persisting these objects (for
-example through a Doctrine custom type) goes through the serializer facade, which
-stores the class name alongside the attributes and restores the exact concrete
-type on read.
-
-## Design principles
-
-* **Framework agnostic** — every integration point is an interface; no framework
-  is required to use the domain layer.
-* **Immutable** — value objects, messages, metadata and queries are
-  `readonly` and return new instances on change.
-* **Statically typed** — generics flow through repositories, buses and queries
-  so results keep their concrete type without manual narrowing.
-* **Transport-agnostic errors** — exceptions describe failure categories;
-  protocol mapping happens at the application boundary.
+- **Immutable by default.** Value objects are `readonly`; the query builders are
+  effectively immutable (no setters, every operation returns a clone).
+- **Framework-agnostic.** Nothing here depends on a framework; the bus, store
+  and repository are interfaces you wire to your infrastructure.
+- **Errors are typed.** A small exception hierarchy (`InvalidInputException`,
+  `NotFoundException`, `ConflictException`, `ForbiddenException`,
+  `UnauthorizedException`, `InfrastructureException`, `UnexpectedException`)
+  maps cleanly onto transport-level responses.
+- **PHP 8.4, strictly analysed.** Built and checked under PHPStan `max` with
+  strict rules.
 
 ## License
 

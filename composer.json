@@ -1,12 +1,13 @@
 {
     "name": "gilsegura/shared",
-    "description": "A lightweight infrastructure component for building CQRS and Event Sourcing applications in PHP.",
+    "description": "Framework-agnostic DDD, Event Sourcing and CQRS building blocks: domain value objects, aggregates, event store, command/query buses, criteria DSL and read models.",
     "type": "library",
     "license": "MIT",
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": "^8.5",
+        "php": "^8.4",
+        "ext-mbstring": "*",
         "gilsegura/serializer": "^1.0",
         "ramsey/uuid": "^4.7"
     },

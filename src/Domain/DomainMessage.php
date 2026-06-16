@@ -35,8 +35,12 @@ final readonly class DomainMessage
 
     public function addMetadata(Metadata $metadata): self
     {
-        return clone ($this, [
-            'metadata' => $this->metadata->merge($metadata),
-        ]);
+        return new self(
+            $this->id,
+            $this->playhead,
+            $this->metadata->merge($metadata),
+            $this->payload,
+            $this->recordedAt,
+        );
     }
 }
