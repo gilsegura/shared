@@ -1,16 +1,15 @@
-# SHARED COMPONENT
-
+# SHARED
 [![tests](https://github.com/gilsegura/shared/actions/workflows/tests.yaml/badge.svg)](https://github.com/gilsegura/shared/actions/workflows/tests.yaml)
 [![codecov](https://codecov.io/github/gilsegura/shared/graph/badge.svg)](https://codecov.io/github/gilsegura/shared)
 [![static analysis](https://github.com/gilsegura/shared/actions/workflows/static-analysis.yaml/badge.svg)](https://github.com/gilsegura/shared/actions/workflows/static-analysis.yaml)
 [![coding standards](https://github.com/gilsegura/shared/actions/workflows/coding-standards.yaml/badge.svg)](https://github.com/gilsegura/shared/actions/workflows/coding-standards.yaml)
 
-Framework-agnostic building blocks for Domain-Driven Design, Event Sourcing and
-CQRS. It gives you the domain primitives (value objects, aggregates, events),
-the write side (event store, event bus, repositories), the read side (read
-models, projectors), and a small typed criteria/query DSL — without tying you
-to any framework. The Symfony/Doctrine integration lives in the companion
-`gilsegura/shared-bundle`.
+Framework-agnostic building blocks for DDD, CQRS and event sourcing. It provides
+the domain primitives (value objects, events, aggregates), the command/query and
+event bus contracts, the event store and upcasting contracts, a criteria DSL for
+querying, and read-model projection support — all as plain PHP, with no
+framework dependency. The `gilsegura/shared-bundle` package wires these onto
+Symfony, Messenger and Doctrine.
 
 ## Installation
 
@@ -18,106 +17,123 @@ to any framework. The Symfony/Doctrine integration lives in the companion
 composer require gilsegura/shared
 ```
 
-Requires PHP 8.4+, `ext-mbstring`, `gilsegura/serializer` and `ramsey/uuid`.
+## Domain primitives
 
-## What's inside
+`Shared\Domain` holds the value objects and the event envelope every other piece
+builds on:
 
-### Domain primitives
+- **`Uuid`, `Email`, `HashedPassword`, `NotEmptyString`, `DateTimeImmutable`** —
+  immutable value objects with validation and equality.
+- **`DomainEventInterface`** — marker for domain events; events are serializable
+  so they can be stored and replayed.
+- **`DomainMessage`** — wraps a domain event (`payload`) together with the
+  aggregate `id`, `playhead`, `Metadata` and `recordedAt`. The `type` is derived
+  from the event class. This is the unit the event store persists and the buses
+  carry.
+- **`DomainEventStream`** — an ordered, iterable stream of `DomainMessage`s.
+- **`Metadata`** — arbitrary key/value context attached to a message.
 
-Small, immutable value objects with enforced invariants: `Uuid`, `Email`,
-`NotEmptyString`, `HashedPassword`, `Metadata`, `DateTimeImmutable`. Each
-validates on construction and fails with an `InvalidInputException` that names
-the problem and includes the offending value:
+## Command and query handling
 
-```php
-use Shared\Domain\Email;
-use Shared\Domain\Uuid;
+`Shared\CommandHandling` defines the CQRS contracts, with no transport opinion:
 
-$id = Uuid::uuid4();
-$email = new Email('ada@example.com');   // throws InvalidInputException if invalid
-$email->equals(new Email('ADA@example.com')); // true — emails compare case-insensitively
-```
+- **`CommandInterface` / `QueryInterface`** — markers for messages.
+- **`CommandHandlerInterface` / `QueryHandlerInterface`** — markers for handlers,
+  generic over the message they handle.
+- **`CommandBusInterface` / `QueryBusInterface`** — the buses a use case depends
+  on. An adapter (e.g. in the bundle) provides the concrete bus.
 
-Events are plain objects implementing `DomainEventInterface`; a recorded event
-is wrapped in a `DomainMessage` (id, playhead, metadata, payload, timestamp).
+## Event handling
 
-### Event-sourced aggregates
+`Shared\EventHandling` is the synchronous, in-process event bus:
 
-Extend `AbstractEventSourcedAggregateRoot`: apply events, let the playhead and
-the uncommitted-event stream be tracked for you, and rebuild state from history
-through `apply{EventName}` methods resolved by convention.
+- **`EventListenerInterface`** — a listener invoked with a `DomainMessage`.
+- **`EventBusInterface`** — publishes a `DomainEventStream` to its listeners.
+- **`SimpleEventBus`** — publishes to its listeners in order, fail-fast: the
+  first listener that throws stops the dispatch.
 
-```php
-final class Account extends AbstractEventSourcedAggregateRoot
-{
-    public function withdraw(Money $amount): void
-    {
-        $this->apply(new MoneyWithdrawn($this->id, $amount));
-    }
+## Event sourcing
 
-    protected function applyMoneyWithdrawn(MoneyWithdrawn $event): void
-    {
-        $this->balance = $this->balance->subtract($event->amount);
-    }
-}
-```
+`Shared\EventSourcing` turns event streams into aggregates and back:
 
-Child entities are supported through `AbstractEventSourcedEntity` and
-`childEntities()`, so events are handled recursively across the aggregate.
+- **`AbstractEventSourcedAggregateRoot`** — base aggregate. `apply()` records an
+  event and routes it to an `applyXxx` method resolved from the event's short
+  name; `uncommittedEvents()` returns what to persist; `initialize()` rebuilds
+  state from a stream. Child entities are reachable through `childEntities()`.
+- **`AbstractEventSourcedEntity`** — same apply mechanics for entities nested
+  inside an aggregate.
+- **`AbstractEventSourcingRepository`** — loads an aggregate from the event store
+  (through a factory) and saves its uncommitted events, publishing them on the
+  event bus.
+- **`AggregateRootFactoryInterface`** + **`PublicConstructorAggregateRootFactory`**
+  — rebuild an aggregate instance from a stream.
+- **`EventStreamDecoratorInterface`** + **`MetadataEnricher`** — decorate the
+  outgoing stream, e.g. to enrich every message's metadata.
 
-### Write side
+## Event store
 
-- `EventStoreInterface` / `EventStoreManagerInterface` — append and load streams.
-- `SimpleEventBus` — publishes domain messages to listeners, with a reentrancy
-  guard so events emitted while publishing are queued and drained in order.
-- `AbstractEventSourcingRepository` — load/save aggregates from the event store.
-- `MetadataEnrichingEventStreamDecorator` + `MetadataEnricherInterface` — attach
-  cross-cutting metadata (correlation, causation, actor) as events are stored.
-- `SequentialUpcasterChain` / `UpcastingEventStore` — evolve old event shapes on
-  read through an upcaster chain.
+`Shared\EventStore` is the persistence contract for streams:
 
-### Read side
+- **`EventStoreInterface`** — `load`/`append` a `DomainEventStream` by aggregate
+  id, with `StreamNotFoundException` / `StreamAlreadyExistsException`.
+- **`EventStoreManagerInterface`** — visiting/streaming events for replay and
+  maintenance.
+- **`EventVisitorInterface` / `CallableEventVisitor`** — visit matching events.
 
-- `ReadModelInterface` / `ReadModelRepositoryInterface` — your projections.
-- `AbstractProjector` — build read models by reacting to domain events.
-- `Replayer` — rebuild projections from the event store.
+## Upcasting
 
-### Command & query buses
+`Shared\Upcasting` keeps old event shapes loadable as the schema evolves:
 
-`CommandBusInterface`, `QueryBusInterface` and their handler interfaces give you
-a typed CQRS seam. Queries are built with a small immutable DSL.
+- **`UpcasterInterface`** — transforms a `DomainMessage` into its newer shape.
+- **`SequentialUpcasterChain`** — runs a series of upcasters in order.
+- **`UpcastingEventStore`** — decorates an event store so events are upcast as
+  they are read. Wrap the real store with this only when you have upcasters;
+  without them, use the store directly.
 
-### The criteria / query DSL
+## Criteria
 
-Queries are assembled fluently and immutably. `SingleResultQuery` (findOne) and
-`CollectionQuery` (findMany) build a criteria tree with `where`, `andX`, `orX`,
-and — for collections — `orderBy`, `withOffset`, `withLimit`. Each operation
-returns a new builder, so a query is safe to share and refine:
+`Shared\Criteria` is a small DSL for expressing filters and ordering in domain
+terms, independent of any database:
 
-```php
-$query = FindPosts::create()
-    ->andX(fn (FindPosts $q) => $q->publishedOnly()->byAuthor($authorId))
-    ->orderBy(OrderX::desc('createdAt'))
-    ->withLimit(20);
-```
+- Composites **`AndX` / `OrX`** combine comparisons such as **`EqId`**,
+  **`EqEmail`**, **`EqPlayhead`**, **`ByPlayhead`**, **`ByRecordedAt`**.
+- **`OrderX`** expresses sorting.
+- The `Expr` namespace is the lower-level expression tree the comparisons map to.
 
-The criteria (`AndX`, `OrX`, `Comparison`, `OrderX`…) map to a backend-agnostic
-expression tree that the infrastructure layer (e.g. Doctrine in
-`shared-bundle`) translates to a real query.
+An infrastructure adapter translates these into a concrete query (the bundle, for
+example, converts them to Doctrine criteria).
 
-## Design notes
+## Queries and read models
 
-- **Immutable by default.** Value objects are `readonly`; the query builders are
-  effectively immutable (no setters, every operation returns a clone).
-- **Framework-agnostic.** Nothing here depends on a framework; the bus, store
-  and repository are interfaces you wire to your infrastructure.
-- **Errors are typed.** A small exception hierarchy (`InvalidInputException`,
-  `NotFoundException`, `ConflictException`, `ForbiddenException`,
-  `UnauthorizedException`, `InfrastructureException`, `UnexpectedException`)
-  maps cleanly onto transport-level responses.
-- **PHP 8.4, strictly analysed.** Built and checked under PHPStan `max` with
-  strict rules.
+- **`Shared\Query`** — `QueryBuilder` builds a typed query from criteria;
+  `CollectionQuery` / `SingleResultQuery` express the expected result shape.
+- **`Shared\ReadModel`** — `ReadModelInterface` and `ReadModelRepositoryInterface`
+  are the read-side contracts; **`AbstractProjector`** implements
+  `EventListenerInterface` and resolves an `applyXxx` method from each event's
+  short name, so a projector only writes handlers for the events it reacts to.
+
+## Replaying
+
+`Shared\Replaying\Replayer` visits the events matching a criteria from the store
+and feeds them to an event visitor — e.g. to rebuild a read model from history.
+
+## Specifications
+
+`Shared\Specification\AbstractSpecification` is the base for composable domain
+specifications (business rules expressed as objects).
+
+## Exceptions
+
+`Shared\Exception` provides a hierarchy mapping domain failures to intent —
+`NotFoundException`, `ConflictException`, `ForbiddenException`,
+`UnauthorizedException`, `InvalidInputException`, `InfrastructureException`,
+`UnexpectedException` — so transport layers can translate them to the right
+status without leaking domain details.
+
+## Support
+
+`Shared\Support\ClassName` resolves the short name of a class, used to map events
+to their `applyXxx` methods.
 
 ## License
-
 MIT. See [LICENSE](LICENSE).
