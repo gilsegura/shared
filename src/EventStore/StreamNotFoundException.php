@@ -7,6 +7,9 @@ namespace Shared\EventStore;
 use Shared\Domain\Uuid;
 use Shared\Exception\NotFoundException;
 
+/**
+ * Raised when loading a stream that does not exist.
+ */
 final class StreamNotFoundException extends NotFoundException
 {
     public static function id(Uuid $id): self

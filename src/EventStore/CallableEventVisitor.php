@@ -6,6 +6,9 @@ namespace Shared\EventStore;
 
 use Shared\Domain\DomainMessage;
 
+/**
+ * An event visitor that delegates each visited message to a closure.
+ */
 final readonly class CallableEventVisitor implements EventVisitorInterface
 {
     /**

@@ -7,6 +7,10 @@ namespace Shared\EventStore;
 use Shared\Domain\Uuid;
 use Shared\Exception\ConflictException;
 
+/**
+ * Raised when appending a stream whose first event would collide with an
+ * existing one.
+ */
 final class StreamAlreadyExistsException extends ConflictException
 {
     public static function playhead(Uuid $id, int $playhead): self

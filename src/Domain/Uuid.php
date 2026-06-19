@@ -7,6 +7,9 @@ namespace Shared\Domain;
 use Ramsey\Uuid\Uuid as Generator;
 use Shared\Exception\InvalidInputException;
 
+/**
+ * A UUID value object with validation and equality.
+ */
 final readonly class Uuid
 {
     public function __construct(

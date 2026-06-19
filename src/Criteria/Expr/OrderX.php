@@ -6,6 +6,9 @@ namespace Shared\Criteria\Expr;
 
 use Shared\Criteria\ExpressionInterface;
 
+/**
+ * Expression describing an ordering over a field.
+ */
 final readonly class OrderX extends Composite
 {
     public function __construct(ExpressionInterface ...$expressions)

@@ -9,6 +9,10 @@ use Shared\EventSourcing\AbstractEventSourcedAggregateRoot;
 use Shared\EventSourcing\AggregateRootFactoryInterface;
 use Shared\EventSourcing\AggregateRootInterface;
 
+/**
+ * Aggregate factory that builds the aggregate through its public
+ * constructor and replays the stream into it.
+ */
 final readonly class PublicConstructorAggregateRootFactory implements AggregateRootFactoryInterface
 {
     public function __construct(

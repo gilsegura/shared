@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Shared\Criteria;
 
+/**
+ * Maps a list of criteria to their underlying expressions.
+ */
 trait MapsCriteriaToExpressionsTrait
 {
     /**

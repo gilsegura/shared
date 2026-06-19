@@ -6,6 +6,9 @@ namespace Shared\Domain;
 
 use Shared\Exception\InvalidInputException;
 
+/**
+ * A hashed password value object.
+ */
 final readonly class HashedPassword
 {
     private const int COST = 12;

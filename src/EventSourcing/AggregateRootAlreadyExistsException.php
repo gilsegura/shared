@@ -6,6 +6,9 @@ namespace Shared\EventSourcing;
 
 use Shared\Exception\ConflictException;
 
+/**
+ * Raised when creating an aggregate whose stream already exists.
+ */
 final class AggregateRootAlreadyExistsException extends ConflictException
 {
     public static function className(string $className): self

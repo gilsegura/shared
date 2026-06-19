@@ -6,6 +6,9 @@ namespace Shared\Criteria\Expr;
 
 use Shared\Criteria\ExpressionInterface;
 
+/**
+ * Base for expression nodes that group other expressions.
+ */
 abstract readonly class Composite implements ExpressionInterface
 {
     /** @var ExpressionInterface[] */

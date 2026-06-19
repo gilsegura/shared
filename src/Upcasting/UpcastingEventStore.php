@@ -12,6 +12,13 @@ use Shared\EventStore\EventStoreInterface;
 use Shared\EventStore\EventStoreManagerInterface;
 use Shared\EventStore\EventVisitorInterface;
 
+/**
+ * Decorates an event store so events are upcast to their current shape as they
+ * leave the store — both when an aggregate is loaded and when events are visited
+ * for replay. The persisted events are never modified; the upcasting happens in
+ * memory on each read, driven by the chain. An empty chain is a transparent
+ * pass-through.
+ */
 final readonly class UpcastingEventStore implements EventStoreInterface, EventStoreManagerInterface
 {
     public function __construct(
@@ -48,6 +55,11 @@ final readonly class UpcastingEventStore implements EventStoreInterface, EventSt
     #[\Override]
     public function visitEvents(Criteria\AndX|Criteria\OrX $criteria, EventVisitorInterface $eventVisitor): void
     {
-        $this->eventStore->visitEvents($criteria, $eventVisitor);
+        // Upcast on visit too, so replaying sees the same current event shapes
+        // that load() produces.
+        $this->eventStore->visitEvents(
+            $criteria,
+            new UpcastingEventVisitor($eventVisitor, $this->upcaster),
+        );
     }
 }

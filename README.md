@@ -84,11 +84,15 @@ builds on:
 
 `Shared\Upcasting` keeps old event shapes loadable as the schema evolves:
 
-- **`UpcasterInterface`** — transforms a `DomainMessage` into its newer shape.
-- **`SequentialUpcasterChain`** — runs a series of upcasters in order.
-- **`UpcastingEventStore`** — decorates an event store so events are upcast as
-  they are read. Wrap the real store with this only when you have upcasters;
-  without them, use the store directly.
+- **`UpcasterInterface`** — transforms a `DomainMessage` into its newer shape,
+  or returns it unchanged when the event is not its concern.
+- **`SequentialUpcasterChain`** — runs the message through its upcasters in
+  order, each receiving the output of the previous one. With no upcasters the
+  message passes through unchanged.
+- **`UpcastingEventStore`** — decorates an event store so events are upcast both
+  when they are loaded (`load`) and when they are visited (`visitEvents`), so a
+  rebuild sees the same current shapes a load produces. An empty chain is a
+  transparent pass-through.
 
 ## Criteria
 
@@ -116,6 +120,8 @@ example, converts them to Doctrine criteria).
 
 `Shared\Replaying\Replayer` visits the events matching a criteria from the store
 and feeds them to an event visitor — e.g. to rebuild a read model from history.
+When the store is an `UpcastingEventStore`, the visited events are upcast too, so
+a projector reacting to the replay sees the current event shapes.
 
 ## Specifications
 

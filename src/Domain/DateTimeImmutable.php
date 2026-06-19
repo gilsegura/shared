@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Shared\Domain;
 
+/**
+ * An immutable date-time value object in ATOM format, with now() and
+ * timestamp helpers.
+ */
 final readonly class DateTimeImmutable
 {
     public string $dateTime;

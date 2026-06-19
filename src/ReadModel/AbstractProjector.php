@@ -8,6 +8,11 @@ use Shared\Domain\DomainMessage;
 use Shared\EventHandling\EventListenerInterface;
 use Shared\EventSourcing\ResolvesApplyMethodTrait;
 
+/**
+ * Base projector. Implements EventListenerInterface and resolves an
+ * applyXxx method from each event's short name, ignoring events it has no
+ * method for.
+ */
 abstract readonly class AbstractProjector implements EventListenerInterface
 {
     use ResolvesApplyMethodTrait;

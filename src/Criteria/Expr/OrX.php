@@ -6,6 +6,9 @@ namespace Shared\Criteria\Expr;
 
 use Shared\Criteria\ExpressionInterface;
 
+/**
+ * Expression node combining sub-expressions with OR.
+ */
 final readonly class OrX extends Composite
 {
     public function __construct(ExpressionInterface ...$expressions)

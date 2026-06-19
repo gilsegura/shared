@@ -9,6 +9,12 @@ use Shared\Domain\DomainEventStream;
 use Shared\Domain\DomainMessage;
 use Shared\Domain\Metadata;
 
+/**
+ * Base aggregate root. apply() records an event and routes it to an
+ * applyXxx method resolved from the event's short name;
+ * uncommittedEvents() returns what to persist; initialize() rebuilds state
+ * from a stream.
+ */
 abstract class AbstractEventSourcedAggregateRoot implements AggregateRootInterface
 {
     use ResolvesApplyMethodTrait;

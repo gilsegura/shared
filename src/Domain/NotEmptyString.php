@@ -6,6 +6,9 @@ namespace Shared\Domain;
 
 use Shared\Exception\InvalidInputException;
 
+/**
+ * A string value object guaranteed to be non-empty.
+ */
 final readonly class NotEmptyString
 {
     public function __construct(

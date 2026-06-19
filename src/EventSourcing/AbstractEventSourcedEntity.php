@@ -6,6 +6,10 @@ namespace Shared\EventSourcing;
 
 use Shared\Domain\DomainEventInterface;
 
+/**
+ * Base for entities nested inside an aggregate, with the same apply
+ * mechanics as the root.
+ */
 abstract class AbstractEventSourcedEntity implements EventSourcedEntityInterface
 {
     use ResolvesApplyMethodTrait;

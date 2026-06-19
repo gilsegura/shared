@@ -6,6 +6,9 @@ namespace Shared\Domain;
 
 use Shared\Exception\InvalidInputException;
 
+/**
+ * An email value object with validation and equality.
+ */
 final readonly class Email
 {
     public function __construct(

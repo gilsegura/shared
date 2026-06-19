@@ -6,6 +6,9 @@ namespace Shared\EventStore;
 
 use Shared\Criteria;
 
+/**
+ * Visits events across the store for replay and maintenance.
+ */
 interface EventStoreManagerInterface
 {
     /**

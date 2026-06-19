@@ -6,6 +6,10 @@ namespace Shared\EventSourcing;
 
 use Shared\Domain\DomainEventInterface;
 
+/**
+ * An entity nested inside an aggregate that reacts to the aggregate's
+ * events.
+ */
 interface EventSourcedEntityInterface
 {
     public function handleRecursively(DomainEventInterface $event): void;

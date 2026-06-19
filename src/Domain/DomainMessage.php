@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Shared\Domain;
 
+/**
+ * Wraps a domain event (payload) with its aggregate id, playhead, metadata
+ * and recorded time. The unit the event store persists and the buses
+ * carry.
+ */
 final readonly class DomainMessage
 {
     public string $type;

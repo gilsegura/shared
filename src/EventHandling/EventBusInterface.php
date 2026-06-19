@@ -6,6 +6,9 @@ namespace Shared\EventHandling;
 
 use Shared\Domain\DomainEventStream;
 
+/**
+ * Publishes a domain event stream to its listeners.
+ */
 interface EventBusInterface
 {
     /**

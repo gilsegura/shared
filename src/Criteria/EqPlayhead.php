@@ -7,6 +7,9 @@ namespace Shared\Criteria;
 use Shared\Criteria\Expr\Comparison;
 use Shared\Criteria\Expr\Operator;
 
+/**
+ * Matches messages whose playhead equals the given value.
+ */
 final readonly class EqPlayhead extends AbstractCriteria
 {
     public function __construct(

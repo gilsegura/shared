@@ -9,6 +9,11 @@ use Shared\Domain\DomainMessage;
 use Shared\Domain\Metadata;
 use Shared\EventSourcing\EventStreamDecoratorInterface;
 
+/**
+ * Stream decorator that runs its enrichers over every message, merging the
+ * resulting metadata onto each one while preserving what was already
+ * there.
+ */
 final readonly class MetadataEnrichingEventStreamDecorator implements EventStreamDecoratorInterface
 {
     /** @var MetadataEnricherInterface[] */

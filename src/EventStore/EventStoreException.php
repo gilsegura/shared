@@ -6,6 +6,9 @@ namespace Shared\EventStore;
 
 use Shared\Exception\InfrastructureException;
 
+/**
+ * Base exception for event store failures.
+ */
 final class EventStoreException extends InfrastructureException
 {
     public static function throwable(\Throwable $e): self

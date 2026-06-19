@@ -7,6 +7,9 @@ namespace Shared\EventStore;
 use Shared\Domain\DomainEventStream;
 use Shared\Domain\Uuid;
 
+/**
+ * Loads and appends domain event streams by aggregate id.
+ */
 interface EventStoreInterface
 {
     /**

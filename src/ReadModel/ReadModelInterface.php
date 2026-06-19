@@ -6,6 +6,9 @@ namespace Shared\ReadModel;
 
 use Shared\Domain\IdentifiableInterface;
 
+/**
+ * A read model: an identifiable projection of events for querying.
+ */
 interface ReadModelInterface extends IdentifiableInterface
 {
 }

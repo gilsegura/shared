@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Shared\Criteria\Expr;
 
+/**
+ * The comparison operators available to expressions.
+ */
 enum Operator: string
 {
     case EQ = '=';
