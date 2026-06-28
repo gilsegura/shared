@@ -16,7 +16,7 @@ abstract readonly class AbstractCriteria implements CriteriaInterface
     }
 
     #[\Override]
-    public function expr(): ExpressionInterface
+    final public function expr(): ExpressionInterface
     {
         return $this->expr;
     }

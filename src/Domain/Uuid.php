@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Shared\Domain;
 
 use Ramsey\Uuid\Uuid as Generator;
-use Shared\Exception\InvalidInputException;
 
 /**
  * A UUID value object with validation and equality.
@@ -16,7 +15,7 @@ final readonly class Uuid
         public string $uuid,
     ) {
         if (!Generator::isValid($this->uuid)) {
-            throw InvalidInputException::notAValidUuid($this->uuid);
+            throw new \InvalidArgumentException(\sprintf('The value "%s" is not a valid UUID.', $this->uuid));
         }
     }
 

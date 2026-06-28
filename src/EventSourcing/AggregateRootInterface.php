@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace Shared\EventSourcing;
 
 use Shared\Domain\DomainEventStream;
-use Shared\Domain\IdentifiableInterface;
+use Shared\Domain\Uuid;
 
 /**
- * An aggregate root: identifiable, records uncommitted events and rebuilds
- * from a stream.
+ * An aggregate root: identified by a Uuid, records uncommitted events and
+ * rebuilds from a stream. The id is part of the contract because the aggregate
+ * stamps it onto every DomainMessage it records.
  */
-interface AggregateRootInterface extends IdentifiableInterface
+interface AggregateRootInterface
 {
+    public function id(): Uuid;
+
     public function uncommittedEvents(): DomainEventStream;
 }

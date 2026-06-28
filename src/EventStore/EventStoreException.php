@@ -11,7 +11,7 @@ use Shared\Exception\InfrastructureException;
  */
 final class EventStoreException extends InfrastructureException
 {
-    public static function throwable(\Throwable $e): self
+    public static function fromThrowable(\Throwable $e): self
     {
         return new self($e->getMessage(), previous: $e);
     }

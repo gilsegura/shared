@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Shared\Domain;
 
-use Shared\Exception\InvalidInputException;
-
 /**
  * A hashed password value object.
  */
@@ -23,7 +21,7 @@ final readonly class HashedPassword
     public static function encode(string $plainPassword): self
     {
         if (mb_strlen($plainPassword) < self::MINIMUM_LENGTH) {
-            throw InvalidInputException::passwordTooShort(self::MINIMUM_LENGTH);
+            throw new \InvalidArgumentException(\sprintf('The password must be at least %d characters long.', self::MINIMUM_LENGTH));
         }
 
         return new self(password_hash($plainPassword, PASSWORD_BCRYPT, ['cost' => self::COST]));

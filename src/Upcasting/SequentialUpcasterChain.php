@@ -29,7 +29,7 @@ final readonly class SequentialUpcasterChain implements UpcasterChainInterface
      * through unchanged. Always yields exactly one message.
      */
     #[\Override]
-    public function __invoke(DomainMessage $message): \Generator
+    public function __invoke(DomainMessage $message): iterable
     {
         foreach ($this->upcasters as $upcaster) {
             $message = $upcaster($message);

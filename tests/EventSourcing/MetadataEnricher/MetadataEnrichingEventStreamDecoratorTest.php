@@ -40,7 +40,7 @@ final class MetadataEnrichingEventStreamDecoratorTest extends TestCase
 final readonly class MetadataEnricher implements MetadataEnricherInterface
 {
     #[\Override]
-    public function enrich(Metadata $metadata): Metadata
+    public function __invoke(Metadata $metadata): Metadata
     {
         return $metadata->merge(Metadata::kv('foo', 'bar'));
     }

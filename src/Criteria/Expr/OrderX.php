@@ -14,7 +14,7 @@ final readonly class OrderX extends Composite
     public function __construct(ExpressionInterface ...$expressions)
     {
         if (!array_all($expressions, static fn (ExpressionInterface $expression): bool => $expression instanceof Sort)) {
-            throw new \InvalidArgumentException('OrderX can only contain Sort expressions.');
+            throw InvalidExpressionException::onlySortAllowed('OrderX');
         }
 
         parent::__construct(...$expressions);

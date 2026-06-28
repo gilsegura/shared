@@ -17,7 +17,7 @@ use Shared\Criteria\OrX;
 abstract class QueryBuilder
 {
     protected function __construct(
-        protected AndX|OrX|CriteriaInterface|null $criteria = null,
+        protected AndX|OrX|null $criteria = null,
     ) {
     }
 
@@ -37,13 +37,13 @@ abstract class QueryBuilder
     {
         return $this->with('criteria', $this->criteria instanceof CriteriaInterface
             ? new AndX($this->criteria, $criteria)
-            : $criteria);
+            : new AndX($criteria));
     }
 
     /**
      * @param callable(static): static $callback
      */
-    public function andX(callable $callback): static
+    final public function andX(callable $callback): static
     {
         return $this->with('criteria', new AndX(...$this->combine($callback)));
     }
@@ -51,12 +51,12 @@ abstract class QueryBuilder
     /**
      * @param callable(static): static $callback
      */
-    public function orX(callable $callback): static
+    final public function orX(callable $callback): static
     {
         return $this->with('criteria', new OrX(...$this->combine($callback)));
     }
 
-    public function criteria(): AndX|OrX|CriteriaInterface|null
+    final public function criteria(): AndX|OrX|null
     {
         return $this->criteria;
     }
@@ -75,7 +75,7 @@ abstract class QueryBuilder
 
         return array_values(array_filter(
             [$this->criteria, $sub->criteria()],
-            static fn (AndX|OrX|CriteriaInterface|null $criterion): bool => $criterion instanceof CriteriaInterface,
+            static fn (?CriteriaInterface $criterion): bool => $criterion instanceof CriteriaInterface,
         ));
     }
 }

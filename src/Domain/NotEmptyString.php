@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Shared\Domain;
 
-use Shared\Exception\InvalidInputException;
-
 /**
  * A string value object guaranteed to be non-empty.
  */
@@ -15,7 +13,7 @@ final readonly class NotEmptyString
         public string $string,
     ) {
         if ('' === $this->string) {
-            throw InvalidInputException::emptyString();
+            throw new \InvalidArgumentException('The value must not be an empty string.');
         }
     }
 

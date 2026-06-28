@@ -48,7 +48,7 @@ abstract class AbstractEventSourcedEntity implements EventSourcedEntityInterface
             $this->aggregateRoot instanceof AbstractEventSourcedAggregateRoot
             && $this->aggregateRoot !== $aggregateRoot
         ) {
-            throw AggregateRootAlreadyExistsException::className($this->aggregateRoot::class);
+            throw AggregateRootAlreadyExistsException::fromClassName($this->aggregateRoot::class);
         }
 
         $this->aggregateRoot = $aggregateRoot;

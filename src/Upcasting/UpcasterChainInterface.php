@@ -14,7 +14,7 @@ use Shared\Domain\DomainMessage;
 interface UpcasterChainInterface
 {
     /**
-     * @return \Generator<DomainMessage>
+     * @return iterable<DomainMessage>
      */
-    public function __invoke(DomainMessage $message): \Generator;
+    public function __invoke(DomainMessage $message): iterable;
 }

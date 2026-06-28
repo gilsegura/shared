@@ -31,15 +31,14 @@ final readonly class UpcastingEventStore implements EventStoreInterface, EventSt
     public function load(Uuid $id, ?int $playhead = null): DomainEventStream
     {
         $stream = $this->eventStore->load($id, $playhead);
-        $messages = $this->upcast($stream);
 
-        return new DomainEventStream(...$messages);
+        return new DomainEventStream(...$this->upcast($stream));
     }
 
     /**
-     * @return \Generator<DomainMessage>
+     * @return iterable<DomainMessage>
      */
-    private function upcast(DomainEventStream $stream): \Generator
+    private function upcast(DomainEventStream $stream): iterable
     {
         foreach ($stream->messages as $message) {
             yield from ($this->upcaster)($message);

@@ -29,6 +29,13 @@ final class InMemoryEventStore implements EventStoreInterface, EventStoreManager
 
         $messages = $this->data[$id->uuid];
 
+        if (null !== $playhead) {
+            $messages = \array_filter(
+                $messages,
+                static fn (DomainMessage $message): bool => $message->playhead >= $playhead,
+            );
+        }
+
         return new DomainEventStream(...$messages);
     }
 

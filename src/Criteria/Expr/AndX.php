@@ -14,7 +14,7 @@ final readonly class AndX extends Composite
     public function __construct(ExpressionInterface ...$expressions)
     {
         if (!array_all($expressions, static fn (ExpressionInterface $expression): bool => !$expression instanceof Sort)) {
-            throw new \InvalidArgumentException('AndX cannot contain a Sort expression.');
+            throw InvalidExpressionException::sortNotAllowed('AndX');
         }
 
         parent::__construct(...$expressions);

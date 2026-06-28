@@ -14,6 +14,7 @@ use Shared\EventSourcing\AbstractEventSourcedAggregateRoot;
 use Shared\EventSourcing\AbstractEventSourcingRepository;
 use Shared\EventSourcing\EventSourcingRepositoryException;
 use Shared\EventSourcing\Factory\PublicConstructorAggregateRootFactory;
+use Shared\EventSourcing\Loader\EventStoreAggregateRootLoader;
 use Shared\EventSourcing\MetadataEnricher\MetadataEnrichingEventStreamDecorator;
 use Shared\EventStore\StreamNotFoundException;
 use Shared\Exception\NotFoundException;
@@ -25,11 +26,16 @@ final class EventSourcingRepositoryTest extends TestCase
     {
         self::expectException(NotFoundException::class);
 
+        $eventStore = new InMemoryEventStore();
+
         $store = new AnotherEventSourcedAggregateRootRepository(
-            new InMemoryEventStore(),
+            new EventStoreAggregateRootLoader(
+                $eventStore,
+                new PublicConstructorAggregateRootFactory(AnotherEventSourcedAggregateRoot::class),
+            ),
+            $eventStore,
             new SimpleEventBus(),
             new MetadataEnrichingEventStreamDecorator(),
-            new PublicConstructorAggregateRootFactory(AnotherEventSourcedAggregateRoot::class)
         );
 
         $store->get(new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac'));
@@ -41,11 +47,16 @@ final class EventSourcingRepositoryTest extends TestCase
             new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac'),
         );
 
+        $eventStore = new InMemoryEventStore();
+
         $store = new AnotherEventSourcedAggregateRootRepository(
-            new InMemoryEventStore(),
+            new EventStoreAggregateRootLoader(
+                $eventStore,
+                new PublicConstructorAggregateRootFactory(AnotherEventSourcedAggregateRoot::class),
+            ),
+            $eventStore,
             new SimpleEventBus(),
             new MetadataEnrichingEventStreamDecorator(),
-            new PublicConstructorAggregateRootFactory(AnotherEventSourcedAggregateRoot::class)
         );
 
         $store->store($aggregateRoot);
@@ -65,10 +76,10 @@ final readonly class AnotherEventSourcedAggregateRootRepository extends Abstract
      * @throws EventSourcingRepositoryException
      * @throws NotFoundException
      */
-    public function get(Uuid $id, ?int $playhead = null): AnotherEventSourcedAggregateRoot
+    public function get(Uuid $id): AnotherEventSourcedAggregateRoot
     {
         try {
-            return $this->load($id, $playhead);
+            return $this->load($id);
         } catch (EventSourcingRepositoryException $e) {
             if ($e->getPrevious() instanceof StreamNotFoundException) {
                 throw new NotFoundException($e->getMessage(), $e->getCode(), previous: $e);

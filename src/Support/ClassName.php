@@ -7,12 +7,8 @@ namespace Shared\Support;
 /**
  * Helpers to derive text from class names.
  */
-final class ClassName
+final readonly class ClassName
 {
-    private function __construct()
-    {
-    }
-
     /**
      * The short class name (without namespace) of a fully-qualified class name.
      */

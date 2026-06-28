@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Shared\Domain;
 
-use Shared\Exception\InvalidInputException;
-
 /**
  * An email value object with validation and equality.
  */
@@ -15,7 +13,7 @@ final readonly class Email
         public string $email,
     ) {
         if (false === filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
-            throw InvalidInputException::notAValidEmail($this->email);
+            throw new \InvalidArgumentException(\sprintf('The value "%s" is not a valid email address.', $this->email));
         }
     }
 

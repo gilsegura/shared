@@ -11,7 +11,7 @@ use Shared\Exception\ConflictException;
  */
 final class AggregateRootAlreadyExistsException extends ConflictException
 {
-    public static function className(string $className): self
+    public static function fromClassName(string $className): self
     {
         return new self(sprintf('The requested aggregate root "%s" already exists.', $className));
     }

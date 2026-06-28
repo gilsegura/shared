@@ -7,17 +7,29 @@ namespace Shared\EventSourcing;
 use Shared\Domain\Uuid;
 use Shared\EventHandling\EventBusInterface;
 use Shared\EventStore\EventStoreInterface;
+use Shared\Snapshotting\Snapshotter;
 
 /**
  * @template TAggregate of AggregateRootInterface
  */
 abstract readonly class AbstractEventSourcingRepository
 {
+    /**
+     * Loading is delegated to a loader (the plain event-store loader, optionally
+     * decorated by snapshotting), so the repository neither reads the stream nor
+     * knows about snapshots on the read path. Writing appends, publishes, and —
+     * when a snapshotter is given — captures a snapshot; with none (the default)
+     * nothing is captured and behaviour is unchanged.
+     *
+     * @param AggregateRootLoaderInterface<TAggregate> $loader
+     * @param Snapshotter<TAggregate>|null             $snapshotter
+     */
     public function __construct(
+        private AggregateRootLoaderInterface $loader,
         private EventStoreInterface $eventStore,
         private EventBusInterface $eventBus,
         private EventStreamDecoratorInterface $streamDecorator,
-        private AggregateRootFactoryInterface $aggregateRootFactory,
+        private ?Snapshotter $snapshotter = null,
     ) {
     }
 
@@ -26,17 +38,12 @@ abstract readonly class AbstractEventSourcingRepository
      *
      * @throws EventSourcingRepositoryException
      */
-    final protected function load(Uuid $id, ?int $playhead = null): AggregateRootInterface
+    final protected function load(Uuid $id): AggregateRootInterface
     {
         try {
-            $stream = $this->eventStore->load($id, $playhead);
-
-            /** @var TAggregate $aggregateRoot */
-            $aggregateRoot = ($this->aggregateRootFactory)($stream);
-
-            return $aggregateRoot;
+            return ($this->loader)($id);
         } catch (\Throwable $e) {
-            throw EventSourcingRepositoryException::throwable($e);
+            throw EventSourcingRepositoryException::fromThrowable($e);
         }
     }
 
@@ -52,8 +59,10 @@ abstract readonly class AbstractEventSourcingRepository
 
             $this->eventStore->append($stream);
             ($this->eventBus)($stream);
+
+            $this->snapshotter?->__invoke($aggregateRoot);
         } catch (\Throwable $e) {
-            throw EventSourcingRepositoryException::throwable($e);
+            throw EventSourcingRepositoryException::fromThrowable($e);
         }
     }
 }

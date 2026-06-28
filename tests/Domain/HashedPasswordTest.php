@@ -6,13 +6,12 @@ namespace Shared\Tests\Domain;
 
 use PHPUnit\Framework\TestCase;
 use Shared\Domain\HashedPassword;
-use Shared\Exception\InvalidInputException;
 
 final class HashedPasswordTest extends TestCase
 {
     public function test_must_throw_assertion_failed_exception(): void
     {
-        self::expectException(InvalidInputException::class);
+        self::expectException(\InvalidArgumentException::class);
 
         HashedPassword::encode('12345');
     }

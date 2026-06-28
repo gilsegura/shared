@@ -13,5 +13,5 @@ use Shared\Domain\Metadata;
  */
 interface MetadataEnricherInterface
 {
-    public function enrich(Metadata $metadata): Metadata;
+    public function __invoke(Metadata $metadata): Metadata;
 }

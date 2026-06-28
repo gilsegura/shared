@@ -51,7 +51,7 @@ final class SimpleEventBus implements EventBusInterface
                     try {
                         $eventListener($message);
                     } catch (\Throwable $throwable) {
-                        throw EventBusException::throwable($throwable);
+                        throw EventBusException::fromThrowable($throwable);
                     }
                 }
             }

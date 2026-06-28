@@ -6,7 +6,6 @@ namespace Shared\Tests\Query;
 
 use PHPUnit\Framework\TestCase;
 use Shared\Criteria\AndX;
-use Shared\Criteria\CriteriaInterface;
 use Shared\Criteria\EqId;
 use Shared\Criteria\EqPlayhead;
 use Shared\Criteria\OrX;
@@ -26,8 +25,7 @@ final class QueryBuilderTest extends TestCase
     {
         $query = TestQuery::of()->withId(new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac'));
 
-        self::assertInstanceOf(CriteriaInterface::class, $query->criteria());
-        self::assertNotInstanceOf(AndX::class, $query->criteria());
+        self::assertInstanceOf(AndX::class, $query->criteria());
     }
 
     public function test_chained_where_combines_with_and(): void

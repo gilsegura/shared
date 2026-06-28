@@ -25,6 +25,12 @@ abstract class AbstractEventSourcedAggregateRoot implements AggregateRootInterfa
     private int $playhead = -1;
 
     /**
+     * Applies a stream onto the aggregate, advancing the playhead from its
+     * current position. A fresh aggregate is at -1, so the full stream is
+     * replayed; an aggregate restored from a snapshot already carries its
+     * playhead, so only the events recorded after it are replayed. The aggregate
+     * is unaware of snapshotting — it merely continues from where it is.
+     *
      * @throws AggregateRootAlreadyExistsException
      */
     final public function initialize(DomainEventStream $stream): void
