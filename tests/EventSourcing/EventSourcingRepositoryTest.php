@@ -16,6 +16,7 @@ use Shared\EventSourcing\EventSourcingRepositoryException;
 use Shared\EventSourcing\Factory\PublicConstructorAggregateRootFactory;
 use Shared\EventSourcing\Loader\EventStoreAggregateRootLoader;
 use Shared\EventSourcing\MetadataEnricher\MetadataEnrichingEventStreamDecorator;
+use Shared\EventSourcing\Register\EventStoreAggregateRootRegister;
 use Shared\EventStore\StreamNotFoundException;
 use Shared\Exception\NotFoundException;
 use Shared\Tests\EventStore\InMemoryEventStore;
@@ -33,9 +34,11 @@ final class EventSourcingRepositoryTest extends TestCase
                 $eventStore,
                 new PublicConstructorAggregateRootFactory(AnotherEventSourcedAggregateRoot::class),
             ),
-            $eventStore,
-            new SimpleEventBus(),
-            new MetadataEnrichingEventStreamDecorator(),
+            new EventStoreAggregateRootRegister(
+                $eventStore,
+                new SimpleEventBus(),
+                new MetadataEnrichingEventStreamDecorator(),
+            ),
         );
 
         $store->get(new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac'));
@@ -54,9 +57,11 @@ final class EventSourcingRepositoryTest extends TestCase
                 $eventStore,
                 new PublicConstructorAggregateRootFactory(AnotherEventSourcedAggregateRoot::class),
             ),
-            $eventStore,
-            new SimpleEventBus(),
-            new MetadataEnrichingEventStreamDecorator(),
+            new EventStoreAggregateRootRegister(
+                $eventStore,
+                new SimpleEventBus(),
+                new MetadataEnrichingEventStreamDecorator(),
+            ),
         );
 
         $store->store($aggregateRoot);

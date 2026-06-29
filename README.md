@@ -65,19 +65,21 @@ builds on:
   through `childEntities()`.
 - **`AbstractEventSourcedEntity`** — same apply mechanics for entities nested
   inside an aggregate.
-- **`AbstractEventSourcingRepository`** — saves an aggregate's uncommitted events
-  (appending to the store, publishing on the event bus, and, when configured,
-  capturing a snapshot), and loads an aggregate through a loader. It does not read
-  the stream itself on the read path.
+- **`AbstractEventSourcingRepository`** — delegates reading to a loader and
+  writing to a register, so it neither reads the stream nor appends, publishes or
+  snapshots itself: both are decorated seams.
 - **`AggregateRootFactoryInterface`** + **`ReflectionAggregateRootFactory`** /
   **`PublicConstructorAggregateRootFactory`** — turn a given stream into an
   aggregate. A factory only transforms a stream; it does not fetch anything.
 - **`AggregateRootLoaderInterface`** — loads a fully rebuilt aggregate by
   id. Unlike a factory, a loader fetches what it needs and produces the
-  aggregate, so it takes the id. This is the seam the repository depends on and
-  the seam snapshotting decorates.
+  aggregate, so it takes the id. This is the read seam the repository depends on
+  and the seam snapshotting decorates.
 - **`Loader\EventStoreAggregateRootLoader`** — the base loader: fetches the full
   stream from the event store and hands it to the factory.
+- **`AggregateRootRegisterInterface`** + **`Register\EventStoreAggregateRootRegister`**
+  — the write seam: decorate the uncommitted events, append them and publish
+  them. Snapshotting decorates this too, symmetric with the loader.
 - **`EventStreamDecoratorInterface`** + **`MetadataEnricher`** — decorate the
   outgoing stream, e.g. to enrich every message's metadata.
 
@@ -122,9 +124,10 @@ from the full stream.
   events recorded after it; otherwise it delegates a full rebuild to the inner
   loader. Composed like the upcasting store: `Snapshot(EventStore(...))`. This
   saves both the read and the replay of everything up to the snapshot.
-- **`Snapshotter`** — the write side: after a save, it asks the strategy whether a
-  snapshot is due and, if so, captures it. Rehydration lives in the loader; this
-  holds only the capture policy and the capture itself.
+- **`SnapshotAggregateRootRegister`** — the write-side counterpart: a register
+  that decorates another register, delegating the append-and-publish first, then
+  asking the strategy whether a snapshot is due and capturing it. Composed the
+  same way, so loading and saving are symmetric, decorated seams.
 
 The aggregate is unaware of snapshotting throughout: capturing and restoring its
 state is done from the outside.

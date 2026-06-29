@@ -12,7 +12,7 @@ use Shared\EventStore\EventStoreInterface;
 
 /**
  * A loader that rebuilds from a snapshot when one exists — fetching and replaying
- * only the events recorded after it — and delegates to the inner loader (a full
+ * only the events recorded after it — and delegates to the loader loader (a full
  * rebuild) when there is none. Snapshotting as a decorator over aggregate
  * loading, composed like the upcasting event store: Snapshot(EventStore(...)).
  *
@@ -23,11 +23,11 @@ use Shared\EventStore\EventStoreInterface;
 final readonly class SnapshotAggregateRootLoader implements AggregateRootLoaderInterface
 {
     /**
-     * @param AggregateRootLoaderInterface<TAggregate> $inner
+     * @param AggregateRootLoaderInterface<TAggregate> $loader
      * @param SnapshotStoreInterface<TAggregate>       $snapshotStore
      */
     public function __construct(
-        private AggregateRootLoaderInterface $inner,
+        private AggregateRootLoaderInterface $loader,
         private EventStoreInterface $eventStore,
         private SnapshotStoreInterface $snapshotStore,
     ) {
@@ -42,7 +42,7 @@ final readonly class SnapshotAggregateRootLoader implements AggregateRootLoaderI
         $snapshot = $this->snapshotStore->load($id);
 
         if (!$snapshot instanceof Snapshot) {
-            return ($this->inner)($id);
+            return ($this->loader)($id);
         }
 
         $aggregateRoot = $snapshot->aggregateRoot;

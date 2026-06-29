@@ -7,7 +7,7 @@ namespace Shared\Snapshotting;
 /**
  * Decides whether a snapshot should be taken at the aggregate's current
  * playhead. Implementations encode the policy — every N events, never — keeping
- * the Snapshotter free of any particular rule.
+ * the register free of any particular rule.
  */
 interface SnapshotStrategyInterface
 {

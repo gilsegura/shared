@@ -19,4 +19,9 @@ final class CorruptSnapshotException extends InfrastructureException
     {
         return new self(\sprintf('Snapshot for "%s" must carry an aggregate extending %s.', $id->uuid, AbstractEventSourcedAggregateRoot::class));
     }
+
+    public static function fromThrowable(\Throwable $e): self
+    {
+        return new self($e->getMessage(), previous: $e);
+    }
 }
