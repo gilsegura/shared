@@ -10,19 +10,21 @@ use Shared\Criteria\OrderX;
 use Shared\Criteria\OrX;
 
 /**
- * Query that represents a collection result (findMany).
+ * Query that represents a paginated collection result. It yields a Page<TResult>
+ * — the items plus the total — so the result type carried to the bus is the page
+ * itself, not a bare list, and every collection query shares one result shape
+ * without a per-query page class.
  *
  * @template TResult
  *
- * @implements QueryInterface<TResult[]>
+ * @implements QueryInterface<Page<TResult>>
  */
 abstract class CollectionQuery extends QueryBuilder implements QueryInterface
 {
     protected function __construct(
         AndX|OrX|null $criteria = null,
         protected ?OrderX $sort = null,
-        protected ?int $offset = null,
-        protected ?int $limit = null,
+        protected ?Pagination $pagination = null,
     ) {
         parent::__construct($criteria);
     }
@@ -32,14 +34,9 @@ abstract class CollectionQuery extends QueryBuilder implements QueryInterface
         return $this->with('sort', $sort);
     }
 
-    final public function withOffset(int $offset): static
+    final public function paginate(Pagination $pagination): static
     {
-        return $this->with('offset', $offset);
-    }
-
-    final public function withLimit(int $limit): static
-    {
-        return $this->with('limit', $limit);
+        return $this->with('pagination', $pagination);
     }
 
     final public function order(): ?OrderX
@@ -47,13 +44,12 @@ abstract class CollectionQuery extends QueryBuilder implements QueryInterface
         return $this->sort;
     }
 
-    final public function offset(): ?int
+    /**
+     * The requested pagination, or the conventional first page when the query was
+     * run without paginating.
+     */
+    final public function pagination(): Pagination
     {
-        return $this->offset;
-    }
-
-    final public function limit(): ?int
-    {
-        return $this->limit;
+        return $this->pagination ?? Pagination::default();
     }
 }

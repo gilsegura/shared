@@ -15,7 +15,7 @@ use Shared\EventStore\EventVisitorInterface;
 final readonly class UpcastingEventVisitor implements EventVisitorInterface
 {
     public function __construct(
-        private EventVisitorInterface $eventVisitor,
+        private EventVisitorInterface $inner,
         private SequentialUpcasterChain $upcaster,
     ) {
     }
@@ -24,7 +24,7 @@ final readonly class UpcastingEventVisitor implements EventVisitorInterface
     public function __invoke(DomainMessage $message): void
     {
         foreach (($this->upcaster)($message) as $upcasted) {
-            ($this->eventVisitor)($upcasted);
+            ($this->inner)($upcasted);
         }
     }
 }

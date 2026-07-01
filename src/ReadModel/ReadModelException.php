@@ -1,0 +1,18 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Shared\ReadModel;
+
+use Shared\Exception\InfrastructureException;
+
+/**
+ * Raised when a read model operation fails.
+ */
+final class ReadModelException extends InfrastructureException
+{
+    public static function fromThrowable(\Throwable $e): self
+    {
+        return new self($e->getMessage(), previous: $e);
+    }
+}

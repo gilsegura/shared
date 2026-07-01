@@ -22,7 +22,7 @@ use Shared\EventStore\EventVisitorInterface;
 final readonly class UpcastingEventStore implements EventStoreInterface, EventStoreManagerInterface
 {
     public function __construct(
-        private EventStoreInterface&EventStoreManagerInterface $eventStore,
+        private EventStoreInterface&EventStoreManagerInterface $inner,
         private SequentialUpcasterChain $upcaster,
     ) {
     }
@@ -30,7 +30,7 @@ final readonly class UpcastingEventStore implements EventStoreInterface, EventSt
     #[\Override]
     public function load(Uuid $id, ?int $playhead = null): DomainEventStream
     {
-        $stream = $this->eventStore->load($id, $playhead);
+        $stream = $this->inner->load($id, $playhead);
 
         return new DomainEventStream(...$this->upcast($stream));
     }
@@ -48,7 +48,7 @@ final readonly class UpcastingEventStore implements EventStoreInterface, EventSt
     #[\Override]
     public function append(DomainEventStream $stream): void
     {
-        $this->eventStore->append($stream);
+        $this->inner->append($stream);
     }
 
     #[\Override]
@@ -56,7 +56,7 @@ final readonly class UpcastingEventStore implements EventStoreInterface, EventSt
     {
         // Upcast on visit too, so replaying sees the same current event shapes
         // that load() produces.
-        $this->eventStore->visitEvents(
+        $this->inner->visitEvents(
             $criteria,
             new UpcastingEventVisitor($eventVisitor, $this->upcaster),
         );

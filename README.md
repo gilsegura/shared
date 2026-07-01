@@ -149,11 +149,26 @@ example, converts them to Doctrine criteria).
 ## Queries and read models
 
 - **`Shared\Query`** — `QueryBuilder` builds a typed query from criteria;
-  `CollectionQuery` / `SingleResultQuery` express the expected result shape.
+  `CollectionQuery` / `SingleResultQuery` express the expected result shape. A
+  `CollectionQuery<T>` carries a `Pagination` (offset + limit, validated) and
+  yields a `Page<T>` (the items plus the total), so the result type the bus
+  returns is the page itself and no per-query page class is needed.
+- **`Shared\Projection`** — `AbstractProjector` is the shared mechanism behind
+  any projection, read model or index: it implements `EventListenerInterface` and
+  resolves an `applyXxx` method from each event's short name, so a projector only
+  writes handlers for the events it reacts to.
 - **`Shared\ReadModel`** — `ReadModelInterface` and `ReadModelRepositoryInterface`
-  are the read-side contracts; **`AbstractProjector`** implements
-  `EventListenerInterface` and resolves an `applyXxx` method from each event's
-  short name, so a projector only writes handlers for the events it reacts to.
+  are the read-side contracts for a presentable projection: a model queried by
+  criteria and served as a result.
+- **`Shared\Index`** — the contracts for a *lookup index*: a projection that
+  resolves a complete key to the ids filed under it, never presented as a
+  resource. `IndexInterface<TKey>` declares only `lookup(TKey): Uuid[]` — the
+  read side, so it stays usable polymorphically; a concrete index adds
+  `save`/`remove` with its own native `IndexEntryInterface` type, the same way a
+  read-model repository declares its writes. `IndexKeyInterface` marks a typed
+  key (an index answers one key, not an arbitrary criterion — that is what keeps
+  it an index and not a queryable model). Use it for search or uniqueness
+  lookups (e.g. tag → ids, email → user id) kept in sync by a projector.
 
 ## Replaying
 

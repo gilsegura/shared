@@ -2,16 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Shared\ReadModel;
+namespace Shared\Projection;
 
 use Shared\Domain\DomainMessage;
 use Shared\EventHandling\EventListenerInterface;
 use Shared\EventSourcing\ResolvesApplyMethodTrait;
 
 /**
- * Base projector. Implements EventListenerInterface and resolves an
- * applyXxx method from each event's short name, ignoring events it has no
- * method for.
+ * Base projector: the shared mechanism behind any projection — a read model or
+ * an index. It implements EventListenerInterface and resolves an applyXxx method
+ * from each event's short name, ignoring events it has no method for, so a
+ * concrete projector only writes handlers for the events it reacts to.
  */
 abstract readonly class AbstractProjector implements EventListenerInterface
 {

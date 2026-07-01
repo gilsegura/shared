@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shared\Tests\Query;
 
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Shared\Criteria\ByPlayhead;
 use Shared\Criteria\EqId;
@@ -11,19 +12,23 @@ use Shared\Criteria\Expr\Order;
 use Shared\Criteria\OrderX;
 use Shared\Domain\Uuid;
 use Shared\Query\CollectionQuery;
+use Shared\Query\Pagination;
 
 final class CollectionQueryTest extends TestCase
 {
-    public function test_empty_collection_query_has_no_sort_offset_or_limit(): void
+    #[Test]
+    public function an_empty_collection_query_has_no_sort_and_defaults_its_pagination(): void
     {
         $query = TestCollectionQuery::of();
 
         self::assertNull($query->order());
-        self::assertNull($query->offset());
-        self::assertNull($query->limit());
+        // Unpaginated queries fall back to the conventional first page.
+        self::assertSame(0, $query->pagination()->offset);
+        self::assertSame(20, $query->pagination()->limit);
     }
 
-    public function test_order_by_sets_the_sort(): void
+    #[Test]
+    public function order_by_sets_the_sort(): void
     {
         $sort = new OrderX(new ByPlayhead(Order::ASC));
 
@@ -32,33 +37,34 @@ final class CollectionQueryTest extends TestCase
         self::assertSame($sort, $query->order());
     }
 
-    public function test_with_offset_and_limit_set_pagination(): void
+    #[Test]
+    public function paginate_sets_the_pagination(): void
     {
-        $query = TestCollectionQuery::of()
-            ->withOffset(10)
-            ->withLimit(20);
+        $query = TestCollectionQuery::of()->paginate(Pagination::of(10, 20));
 
-        self::assertSame(10, $query->offset());
-        self::assertSame(20, $query->limit());
+        self::assertSame(10, $query->pagination()->offset);
+        self::assertSame(20, $query->pagination()->limit);
     }
 
-    public function test_collection_query_is_immutable(): void
+    #[Test]
+    public function a_collection_query_is_immutable(): void
     {
         $base = TestCollectionQuery::of();
-        $paginated = $base->withLimit(5);
+        $paginated = $base->paginate(Pagination::of(0, 5));
 
-        self::assertNull($base->limit());
-        self::assertSame(5, $paginated->limit());
+        self::assertSame(20, $base->pagination()->limit);
+        self::assertSame(5, $paginated->pagination()->limit);
     }
 
-    public function test_keeps_criteria_while_paginating(): void
+    #[Test]
+    public function it_keeps_criteria_while_paginating(): void
     {
         $query = TestCollectionQuery::of()
             ->withId(new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac'))
-            ->withLimit(5);
+            ->paginate(Pagination::of(0, 5));
 
         self::assertNotNull($query->criteria());
-        self::assertSame(5, $query->limit());
+        self::assertSame(5, $query->pagination()->limit);
     }
 }
 

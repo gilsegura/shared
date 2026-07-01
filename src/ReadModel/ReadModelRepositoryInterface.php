@@ -7,6 +7,7 @@ namespace Shared\ReadModel;
 use Shared\Criteria\AndX;
 use Shared\Criteria\OrderX;
 use Shared\Criteria\OrX;
+use Shared\Query\Pagination;
 
 /**
  * The one thing every read model repository can do: find by criteria. The base
@@ -22,12 +23,11 @@ interface ReadModelRepositoryInterface
     /**
      * @return TReadModel[]
      *
-     * @throws ReadModelRepositoryException
+     * @throws ReadModelException
      */
     public function findBy(
         AndX|OrX|null $criteria = null,
         ?OrderX $sort = null,
-        ?int $offset = null,
-        ?int $limit = null,
+        ?Pagination $pagination = null,
     ): array;
 }

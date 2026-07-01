@@ -17,6 +17,8 @@ use Shared\Snapshotting\SnapshotAggregateRootRegister;
 
 final class SnapshotAggregateRootRegisterTest extends TestCase
 {
+    private const string ID = '9db0db88-3e44-4d2b-b46f-9ca547de06ac';
+
     #[Test]
     public function it_delegates_to_the_inner_register(): void
     {
@@ -47,7 +49,7 @@ final class SnapshotAggregateRootRegisterTest extends TestCase
 
         $register($aggregateRoot);
 
-        $snapshot = $snapshots->load(new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac'));
+        $snapshot = $snapshots->load(new Uuid(self::ID));
 
         self::assertNotNull($snapshot);
         self::assertSame(2, $snapshot->playhead);
@@ -64,12 +66,12 @@ final class SnapshotAggregateRootRegisterTest extends TestCase
 
         $register($this->aggregateAt(0, 1)); // playhead 1
 
-        self::assertNull($snapshots->load(new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac')));
+        self::assertNull($snapshots->load(new Uuid(self::ID)));
     }
 
     private function aggregateAt(int ...$playheads): SnapshottableAggregateRoot
     {
-        $id = new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac');
+        $id = new Uuid(self::ID);
 
         $messages = \array_map(
             static fn (int $playhead): DomainMessage => DomainMessage::record(

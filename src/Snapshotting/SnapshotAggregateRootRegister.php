@@ -10,9 +10,9 @@ use Shared\EventSourcing\AggregateRootRegisterInterface;
 
 /**
  * A register that decorates another register: it delegates the append-and-publish
- * to the register register first, then asks the strategy whether a snapshot is due
+ * to the inner register first, then asks the strategy whether a snapshot is due
  * at the aggregate's current playhead and, if so, captures it. The write-side
- * counterpart of SnapshotAggregateRootregister, composed the same way:
+ * counterpart of SnapshotAggregateRootLoader, composed the same way:
  * Snapshot(EventStore(...)). The aggregate stays unaware it was captured.
  *
  * @template-contravariant TAggregate of AggregateRootInterface
@@ -22,11 +22,11 @@ use Shared\EventSourcing\AggregateRootRegisterInterface;
 final readonly class SnapshotAggregateRootRegister implements AggregateRootRegisterInterface
 {
     /**
-     * @param AggregateRootRegisterInterface<TAggregate> $register
+     * @param AggregateRootRegisterInterface<TAggregate> $inner
      * @param SnapshotStoreInterface<TAggregate>         $snapshotStore
      */
     public function __construct(
-        private AggregateRootRegisterInterface $register,
+        private AggregateRootRegisterInterface $inner,
         private SnapshotStoreInterface $snapshotStore,
         private SnapshotStrategyInterface $strategy,
     ) {
@@ -38,7 +38,7 @@ final readonly class SnapshotAggregateRootRegister implements AggregateRootRegis
     #[\Override]
     public function __invoke(AggregateRootInterface $aggregateRoot): void
     {
-        ($this->register)($aggregateRoot);
+        ($this->inner)($aggregateRoot);
 
         if (!$aggregateRoot instanceof AbstractEventSourcedAggregateRoot) {
             return;

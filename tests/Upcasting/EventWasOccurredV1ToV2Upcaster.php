@@ -18,16 +18,16 @@ final readonly class EventWasOccurredV1ToV2Upcaster implements UpcasterInterface
     {
         $event = $message->payload;
 
-        if ($event instanceof EventV1WasOccurred) {
-            return new DomainMessage(
-                $message->id,
-                $message->playhead,
-                $message->metadata,
-                new EventV2WasOccurred(),
-                $message->recordedAt
-            );
+        if (!$event instanceof EventV1WasOccurred) {
+            return $message;
         }
 
-        return $message;
+        return new DomainMessage(
+            $message->id,
+            $message->playhead,
+            $message->metadata,
+            new EventV2WasOccurred(),
+            $message->recordedAt
+        );
     }
 }

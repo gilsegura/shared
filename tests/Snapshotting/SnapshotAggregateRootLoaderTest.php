@@ -21,10 +21,12 @@ use Shared\Tests\EventStore\InMemoryEventStore;
 
 final class SnapshotAggregateRootLoaderTest extends TestCase
 {
+    private const string ID = '9db0db88-3e44-4d2b-b46f-9ca547de06ac';
+
     #[Test]
     public function it_delegates_to_the_inner_loader_when_there_is_no_snapshot(): void
     {
-        $id = new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac');
+        $id = new Uuid(self::ID);
 
         $eventStore = new InMemoryEventStore();
         $eventStore->append($this->streamOf($id, 0, 1, 2));
@@ -51,7 +53,7 @@ final class SnapshotAggregateRootLoaderTest extends TestCase
     #[Test]
     public function it_resumes_from_a_snapshot_replaying_only_later_events(): void
     {
-        $id = new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac');
+        $id = new Uuid(self::ID);
 
         // The event store holds the full history (5 events, playhead 0..4).
         $eventStore = new InMemoryEventStore();
@@ -85,7 +87,7 @@ final class SnapshotAggregateRootLoaderTest extends TestCase
     #[Test]
     public function it_keeps_the_snapshot_playhead_when_no_later_events_exist(): void
     {
-        $id = new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac');
+        $id = new Uuid(self::ID);
 
         // Store and snapshot are at the same position: nothing to replay.
         $eventStore = new InMemoryEventStore();
@@ -117,7 +119,7 @@ final class SnapshotAggregateRootLoaderTest extends TestCase
     {
         self::expectException(CorruptSnapshotException::class);
 
-        $id = new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac');
+        $id = new Uuid(self::ID);
 
         $eventStore = new InMemoryEventStore();
         $eventStore->append($this->streamOf($id, 0));

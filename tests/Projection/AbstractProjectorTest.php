@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shared\Tests\ReadModel;
+namespace Shared\Tests\Projection;
 
 use PHPUnit\Framework\TestCase;
 use Serializer\SerializableInterface;
@@ -10,14 +10,14 @@ use Shared\Domain\DomainEventInterface;
 use Shared\Domain\DomainMessage;
 use Shared\Domain\Metadata;
 use Shared\Domain\Uuid;
-use Shared\ReadModel\AbstractProjector;
+use Shared\Projection\AbstractProjector;
 
-final class ReadModelProjectionFactoryTest extends TestCase
+final class AbstractProjectorTest extends TestCase
 {
     public function test_must_apply_specific_event_when_method_exists(): void
     {
         $collector = new Collector();
-        $projector = new AggregateRootProjectionFactory($collector);
+        $projector = new TestProjector($collector);
 
         $projector(DomainMessage::record(
             new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac'),
@@ -36,7 +36,7 @@ final class ReadModelProjectionFactoryTest extends TestCase
     public function test_must_apply_specific_event_when_method_not_exists(): void
     {
         $collector = new Collector();
-        $projector = new AggregateRootProjectionFactory($collector);
+        $projector = new TestProjector($collector);
 
         $projector(DomainMessage::record(
             new Uuid('9db0db88-3e44-4d2b-b46f-9ca547de06ac'),
@@ -52,7 +52,7 @@ final class ReadModelProjectionFactoryTest extends TestCase
     }
 }
 
-final readonly class AggregateRootProjectionFactory extends AbstractProjector
+final readonly class TestProjector extends AbstractProjector
 {
     public function __construct(
         private Collector $collector,
